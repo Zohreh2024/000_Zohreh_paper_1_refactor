@@ -1,3 +1,4 @@
+
 # --------------------------------------------------------------------------- #
 # Data  (~1.67 TB)
 # --------------------------------------------------------------------------- #
@@ -55,6 +56,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .coverage
+
+# CSIRO DAP file manifest, re-fetchable with --refresh-manifest (~30 MB)
+.dap_*_manifest.json
 htmlcov/
 build/
 dist/

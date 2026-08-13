@@ -221,136 +221,56 @@ def stream_match(src_path, template, resampling):
 # Load the NLUM template and its valid-cell mask
 # --------------------------------------------------------------------------- #
 
-template = rioxarray.open_rasterio(NLUM_MASK).sel(band=1, drop=True)
-valid = template.values == 1
-
-print(f"template : {template.rio.height} x {template.rio.width}")
-print(f"valid    : {valid.sum():,} of {valid.size:,} cells")
-
-
-# --------------------------------------------------------------------------- #
-# tmin - monthly minimum temperature, 12 bands, degC
-# --------------------------------------------------------------------------- #
-
-for src in tqdm(todo("tmin"), desc="tmin", unit="file"):
-    dst = PROCESSED_DIR / "tmin" / src.name
-    clipped = clip(src, template)
-    matched = reproject_match(clipped, template, desc=src.name)
-    filled = fill(matched, valid)
-    write_gtiff(filled, dst, template, band_descriptions(src))
-    clipped.close()
-
-    # Stay quiet on success; only speak up if the grid drifted off NLUM or the
-    # fill left a hole inside the mask. Both should be impossible.
-    nan_in_mask = np.isnan(filled[:, valid]).sum()
-    if filled.shape[1:] != valid.shape or nan_in_mask:
-        print(
-            f"[WARN] {dst.name}\n"
-            f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
-            f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
-            f"       nan in mask  {nan_in_mask:,}\n"
-            f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
-        )
+def load_template():
+    """Return (template DataArray, boolean valid-cell mask) for the NLUM grid."""
+    template = rioxarray.open_rasterio(NLUM_MASK).sel(band=1, drop=True)
+    return template, template.values == 1
 
 
-# --------------------------------------------------------------------------- #
-# tmax - monthly maximum temperature, 12 bands, degC
-# --------------------------------------------------------------------------- #
+def main():
+    """Process every variable, top to bottom.
 
-for src in tqdm(todo("tmax"), desc="tmax", unit="file"):
-    dst = PROCESSED_DIR / "tmax" / src.name
-    clipped = clip(src, template)
-    matched = reproject_match(clipped, template, desc=src.name)
-    filled = fill(matched, valid)
-    write_gtiff(filled, dst, template, band_descriptions(src))
-    clipped.close()
+    Wrapped in a function so sibling scripts can import the helpers above
+    (fill_with_nearest, fill, write_gtiff, load_template) without this whole
+    pipeline running on import. Behaviour when run directly is unchanged.
+    """
+    template, valid = load_template()
 
-    nan_in_mask = np.isnan(filled[:, valid]).sum()
-    if filled.shape[1:] != valid.shape or nan_in_mask:
-        print(
-            f"[WARN] {dst.name}\n"
-            f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
-            f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
-            f"       nan in mask  {nan_in_mask:,}\n"
-            f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
-        )
+    print(f"template : {template.rio.height} x {template.rio.width}")
+    print(f"valid    : {valid.sum():,} of {valid.size:,} cells")
 
 
-# --------------------------------------------------------------------------- #
-# prec - monthly precipitation, 12 bands, mm
-#
-# Unlike the other three, the source is int16 with nodata -32768. masked=True in
-# clip() converts that sentinel to NaN and promotes to float32 before any
-# resampling, so -32768 never gets averaged into coastal cells. Verified: a
-# clipped band holds 10,745,592 nodata cells, all NaN after masking, leaving a
-# real range of 1-896 mm.
-# --------------------------------------------------------------------------- #
+    # --------------------------------------------------------------------------- #
+    # tmin - monthly minimum temperature, 12 bands, degC
+    # --------------------------------------------------------------------------- #
 
-for src in tqdm(todo("prec"), desc="prec", unit="file"):
-    dst = PROCESSED_DIR / "prec" / src.name
-    clipped = clip(src, template)
-    matched = reproject_match(clipped, template, desc=src.name)
-    filled = fill(matched, valid)
-    write_gtiff(filled, dst, template, band_descriptions(src))
-    clipped.close()
+    for src in tqdm(todo("tmin"), desc="tmin", unit="file"):
+        dst = PROCESSED_DIR / "tmin" / src.name
+        clipped = clip(src, template)
+        matched = reproject_match(clipped, template, desc=src.name)
+        filled = fill(matched, valid)
+        write_gtiff(filled, dst, template, band_descriptions(src))
+        clipped.close()
 
-    nan_in_mask = np.isnan(filled[:, valid]).sum()
-    if filled.shape[1:] != valid.shape or nan_in_mask:
-        print(
-            f"[WARN] {dst.name}\n"
-            f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
-            f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
-            f"       nan in mask  {nan_in_mask:,}\n"
-            f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
-        )
+        # Stay quiet on success; only speak up if the grid drifted off NLUM or the
+        # fill left a hole inside the mask. Both should be impossible.
+        nan_in_mask = np.isnan(filled[:, valid]).sum()
+        if filled.shape[1:] != valid.shape or nan_in_mask:
+            print(
+                f"[WARN] {dst.name}\n"
+                f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
+                f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
+                f"       nan in mask  {nan_in_mask:,}\n"
+                f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
+            )
 
 
-# --------------------------------------------------------------------------- #
-# bioc - 19 bioclimatic variables, 19 bands, mixed units
-#
-# BIO1-11 are temperature (degC), BIO12-19 precipitation (mm) and ratios. All are
-# continuous, so bilinear is fine across the set, but the bands are NOT
-# interchangeable - check units before comparing bands downstream.
-# --------------------------------------------------------------------------- #
+    # --------------------------------------------------------------------------- #
+    # tmax - monthly maximum temperature, 12 bands, degC
+    # --------------------------------------------------------------------------- #
 
-for src in tqdm(todo("bioc"), desc="bioc", unit="file"):
-    dst = PROCESSED_DIR / "bioc" / src.name
-    clipped = clip(src, template)
-    matched = reproject_match(clipped, template, desc=src.name)
-    filled = fill(matched, valid)
-    write_gtiff(filled, dst, template, band_descriptions(src))
-    clipped.close()
-
-    nan_in_mask = np.isnan(filled[:, valid]).sum()
-    if filled.shape[1:] != valid.shape or nan_in_mask:
-        print(
-            f"[WARN] {dst.name}\n"
-            f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
-            f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
-            f"       nan in mask  {nan_in_mask:,}\n"
-            f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
-        )
-
-
-# --------------------------------------------------------------------------- #
-# hist_* - WorldClim 2.1 historical climate, 1970-2000
-#
-# These are what the FPI random forest TRAINS on, while the future scenarios
-# above are what it predicts on, so both must be processed identically -
-# same clip, same bilinear resampling, same fill, same mask. Anything else puts
-# training and prediction on different footings.
-#
-# Layout differs from the CMIP6 products: historical ships one single-band
-# raster per month (or per bioclim variable), not one multi-band file per
-# scenario. Band count is therefore 1 and the loop body is unchanged; only the
-# number of files differs (19 for bio, 12 each for prec/tmax/tmin).
-#
-# Note the variable code: historical bioclim is `bio`, CMIP6 bioclim is `bioc`.
-# --------------------------------------------------------------------------- #
-
-for variable in ["hist_bio", "hist_prec", "hist_tmax", "hist_tmin"]:
-    for src in tqdm(todo(variable), desc=variable, unit="file"):
-        dst = PROCESSED_DIR / variable / src.name
+    for src in tqdm(todo("tmax"), desc="tmax", unit="file"):
+        dst = PROCESSED_DIR / "tmax" / src.name
         clipped = clip(src, template)
         matched = reproject_match(clipped, template, desc=src.name)
         filled = fill(matched, valid)
@@ -368,56 +288,152 @@ for variable in ["hist_bio", "hist_prec", "hist_tmax", "hist_tmin"]:
             )
 
 
-# --------------------------------------------------------------------------- #
-# soil_N - total soil nitrogen, 6 depth slices, 1 band each, % w/w
-#
-# WGS 84 at ~90 m (40800 x 49200), so 12x finer than NLUM in each direction.
-# Resampled with AVERAGE, not bilinear: each output cell aggregates all ~144
-# source cells it covers instead of point-sampling one of them. Uses
-# stream_match() because a single band over the NLUM box would be ~7.9 GB.
-#
-# The source starts at 112.9996E while NLUM reaches 112.925E, so the far west
-# edge has no source data - fill() closes that gap from the nearest valid cell.
-# --------------------------------------------------------------------------- #
+    # --------------------------------------------------------------------------- #
+    # prec - monthly precipitation, 12 bands, mm
+    #
+    # Unlike the other three, the source is int16 with nodata -32768. masked=True in
+    # clip() converts that sentinel to NaN and promotes to float32 before any
+    # resampling, so -32768 never gets averaged into coastal cells. Verified: a
+    # clipped band holds 10,745,592 nodata cells, all NaN after masking, leaving a
+    # real range of 1-896 mm.
+    # --------------------------------------------------------------------------- #
 
-for src in tqdm(todo("soil_N"), desc="soil_N", unit="file"):
-    dst = PROCESSED_DIR / "soil_N" / src.name
-    matched = stream_match(src, template, Resampling.average)
-    filled = fill(matched, valid)
-    write_gtiff(filled, dst, template, band_descriptions(src))
+    for src in tqdm(todo("prec"), desc="prec", unit="file"):
+        dst = PROCESSED_DIR / "prec" / src.name
+        clipped = clip(src, template)
+        matched = reproject_match(clipped, template, desc=src.name)
+        filled = fill(matched, valid)
+        write_gtiff(filled, dst, template, band_descriptions(src))
+        clipped.close()
 
-    nan_in_mask = np.isnan(filled[:, valid]).sum()
-    if filled.shape[1:] != valid.shape or nan_in_mask:
-        print(
-            f"[WARN] {dst.name}\n"
-            f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
-            f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
-            f"       nan in mask  {nan_in_mask:,}\n"
-            f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
-        )
+        nan_in_mask = np.isnan(filled[:, valid]).sum()
+        if filled.shape[1:] != valid.shape or nan_in_mask:
+            print(
+                f"[WARN] {dst.name}\n"
+                f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
+                f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
+                f"       nan in mask  {nan_in_mask:,}\n"
+                f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
+            )
 
 
-# --------------------------------------------------------------------------- #
-# soil_P - soil phosphorus, 6 depth slices, 1 band each, % w/w
-#
-# Already GDA94 at 0.01 deg, so this is a half-cell grid shift rather than a real
-# reprojection - bilinear blends the neighbours. nodata is -9999 (not NaN);
-# stream_match() passes it as src_nodata so it becomes NaN before resampling
-# instead of being blended into valid cells.
-# --------------------------------------------------------------------------- #
+    # --------------------------------------------------------------------------- #
+    # bioc - 19 bioclimatic variables, 19 bands, mixed units
+    #
+    # BIO1-11 are temperature (degC), BIO12-19 precipitation (mm) and ratios. All are
+    # continuous, so bilinear is fine across the set, but the bands are NOT
+    # interchangeable - check units before comparing bands downstream.
+    # --------------------------------------------------------------------------- #
 
-for src in tqdm(todo("soil_P"), desc="soil_P", unit="file"):
-    dst = PROCESSED_DIR / "soil_P" / src.name
-    matched = stream_match(src, template, Resampling.bilinear)
-    filled = fill(matched, valid)
-    write_gtiff(filled, dst, template, band_descriptions(src))
+    for src in tqdm(todo("bioc"), desc="bioc", unit="file"):
+        dst = PROCESSED_DIR / "bioc" / src.name
+        clipped = clip(src, template)
+        matched = reproject_match(clipped, template, desc=src.name)
+        filled = fill(matched, valid)
+        write_gtiff(filled, dst, template, band_descriptions(src))
+        clipped.close()
 
-    nan_in_mask = np.isnan(filled[:, valid]).sum()
-    if filled.shape[1:] != valid.shape or nan_in_mask:
-        print(
-            f"[WARN] {dst.name}\n"
-            f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
-            f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
-            f"       nan in mask  {nan_in_mask:,}\n"
-            f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
-        )
+        nan_in_mask = np.isnan(filled[:, valid]).sum()
+        if filled.shape[1:] != valid.shape or nan_in_mask:
+            print(
+                f"[WARN] {dst.name}\n"
+                f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
+                f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
+                f"       nan in mask  {nan_in_mask:,}\n"
+                f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
+            )
+
+
+    # --------------------------------------------------------------------------- #
+    # hist_* - WorldClim 2.1 historical climate, 1970-2000
+    #
+    # These are what the FPI random forest TRAINS on, while the future scenarios
+    # above are what it predicts on, so both must be processed identically -
+    # same clip, same bilinear resampling, same fill, same mask. Anything else puts
+    # training and prediction on different footings.
+    #
+    # Layout differs from the CMIP6 products: historical ships one single-band
+    # raster per month (or per bioclim variable), not one multi-band file per
+    # scenario. Band count is therefore 1 and the loop body is unchanged; only the
+    # number of files differs (19 for bio, 12 each for prec/tmax/tmin).
+    #
+    # Note the variable code: historical bioclim is `bio`, CMIP6 bioclim is `bioc`.
+    # --------------------------------------------------------------------------- #
+
+    for variable in ["hist_bio", "hist_prec", "hist_tmax", "hist_tmin"]:
+        for src in tqdm(todo(variable), desc=variable, unit="file"):
+            dst = PROCESSED_DIR / variable / src.name
+            clipped = clip(src, template)
+            matched = reproject_match(clipped, template, desc=src.name)
+            filled = fill(matched, valid)
+            write_gtiff(filled, dst, template, band_descriptions(src))
+            clipped.close()
+
+            nan_in_mask = np.isnan(filled[:, valid]).sum()
+            if filled.shape[1:] != valid.shape or nan_in_mask:
+                print(
+                    f"[WARN] {dst.name}\n"
+                    f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
+                    f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
+                    f"       nan in mask  {nan_in_mask:,}\n"
+                    f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
+                )
+
+
+    # --------------------------------------------------------------------------- #
+    # soil_N - total soil nitrogen, 6 depth slices, 1 band each, % w/w
+    #
+    # WGS 84 at ~90 m (40800 x 49200), so 12x finer than NLUM in each direction.
+    # Resampled with AVERAGE, not bilinear: each output cell aggregates all ~144
+    # source cells it covers instead of point-sampling one of them. Uses
+    # stream_match() because a single band over the NLUM box would be ~7.9 GB.
+    #
+    # The source starts at 112.9996E while NLUM reaches 112.925E, so the far west
+    # edge has no source data - fill() closes that gap from the nearest valid cell.
+    # --------------------------------------------------------------------------- #
+
+    for src in tqdm(todo("soil_N"), desc="soil_N", unit="file"):
+        dst = PROCESSED_DIR / "soil_N" / src.name
+        matched = stream_match(src, template, Resampling.average)
+        filled = fill(matched, valid)
+        write_gtiff(filled, dst, template, band_descriptions(src))
+
+        nan_in_mask = np.isnan(filled[:, valid]).sum()
+        if filled.shape[1:] != valid.shape or nan_in_mask:
+            print(
+                f"[WARN] {dst.name}\n"
+                f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
+                f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
+                f"       nan in mask  {nan_in_mask:,}\n"
+                f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
+            )
+
+
+    # --------------------------------------------------------------------------- #
+    # soil_P - soil phosphorus, 6 depth slices, 1 band each, % w/w
+    #
+    # Already GDA94 at 0.01 deg, so this is a half-cell grid shift rather than a real
+    # reprojection - bilinear blends the neighbours. nodata is -9999 (not NaN);
+    # stream_match() passes it as src_nodata so it becomes NaN before resampling
+    # instead of being blended into valid cells.
+    # --------------------------------------------------------------------------- #
+
+    for src in tqdm(todo("soil_P"), desc="soil_P", unit="file"):
+        dst = PROCESSED_DIR / "soil_P" / src.name
+        matched = stream_match(src, template, Resampling.bilinear)
+        filled = fill(matched, valid)
+        write_gtiff(filled, dst, template, band_descriptions(src))
+
+        nan_in_mask = np.isnan(filled[:, valid]).sum()
+        if filled.shape[1:] != valid.shape or nan_in_mask:
+            print(
+                f"[WARN] {dst.name}\n"
+                f"       shape        {filled.shape[1:]} vs NLUM {valid.shape}\n"
+                f"       valid cells  {valid.sum():,} of {valid.size:,} per band\n"
+                f"       nan in mask  {nan_in_mask:,}\n"
+                f"       nan total    {np.isnan(filled).sum():,} of {filled.size:,}"
+            )
+
+
+if __name__ == "__main__":
+    main()
