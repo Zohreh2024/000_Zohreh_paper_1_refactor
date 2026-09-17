@@ -1,0 +1,30 @@
+Step_04_aggregate_cells.py:107: RuntimeWarning: Mean of empty slice
+  cells["fpi_mean"] = np.nanmean(acc, axis=0)
+C:\ProgramData\Anaconda3\envs\JinzhuLuto\lib\site-packages\numpy\lib\nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+Step_04_aggregate_cells.py:107: RuntimeWarning: Mean of empty slice
+  cells["fpi_mean"] = np.nanmean(acc, axis=0)
+C:\ProgramData\Anaconda3\envs\JinzhuLuto\lib\site-packages\numpy\lib\nanfunctions.py:1872: RuntimeWarning: Degrees of freedom <= 0 for slice.
+  var = nanvar(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+12341125 footprints, 267863 NLUM cells
+  burnt within 10 years of acquisition: 23.0% of footprints
+  in a 2019-20 fire footprint            : 16.8%
+
+aggregating
+  all                    267863 cells -> 174911 with >= 30 footprints (p99 kept for 15339)
+  fire-excluded          207368 cells -> 133540 with >= 30 footprints (p99 kept for 12104)
+  FPI averaged over 30 annual rasters
+
+all: 174790 cells
+  FPI 3.24 to 25.14, median p95 AGBD 235.1 Mg/ha
+  median M'/p95 1.11, p95 exceeds M' in 46.0% of cells
+  fixed-n p95 exceeds M' in 44.9% of cells
+  wrote \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\outputs\gedi_cells_all_baseline_M_1985-2014.csv
+  FPI averaged over 30 annual rasters
+
+unburnt: 133429 cells
+  FPI 3.24 to 25.14, median p95 AGBD 202.1 Mg/ha
+  median M'/p95 1.22, p95 exceeds M' in 42.1% of cells
+  fixed-n p95 exceeds M' in 41.0% of cells
+  wrote \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\outputs\gedi_cells_unburnt_baseline_M_1985-2014.csv
+exit 0

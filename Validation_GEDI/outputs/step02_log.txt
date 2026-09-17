@@ -1,0 +1,90 @@
+MODIS burned area: MCD64A1 v061  (C2565786756-LPCLOUD)
+credentials via N:\Current-Users\ZOHREH-KALAHROUDI\.netrc
+
+=== vic_central: 204 granules, 204 not already processed ===
+     25/204
+     50/204
+     75/204
+     100/204
+     125/204
+     150/204
+     175/204
+     200/204
+
+=== vic_gippsland: 204 granules, 0 not already processed ===
+
+=== tasmania: 408 granules, 408 not already processed ===
+     25/408
+     50/408
+     75/408
+     100/408
+     125/408
+     150/408
+     175/408
+     200/408
+     225/408
+     250/408
+     275/408
+     300/408
+     325/408
+     350/408
+     375/408
+     400/408
+
+=== nsw_southeast: 612 granules, 408 not already processed ===
+     25/408
+     50/408
+     75/408
+     100/408
+     125/408
+     150/408
+     175/408
+     200/408
+     225/408
+     250/408
+     275/408
+     300/408
+     325/408
+     350/408
+     375/408
+     400/408
+
+=== nsw_north_seqld: 612 granules, 204 not already processed ===
+     25/204
+     50/204
+     75/204
+     100/204
+     125/204
+     150/204
+     175/204
+     200/204
+
+=== wa_southwest: 204 granules, 204 not already processed ===
+     25/204
+     50/204
+     75/204
+     100/204
+     125/204
+     150/204
+     175/204
+     200/204
+  burn_year_2009.tif  43473 cells
+  burn_year_2010.tif  17590 cells
+  burn_year_2011.tif  94272 cells
+  burn_year_2012.tif  67817 cells
+  burn_year_2013.tif  39198 cells
+  burn_year_2014.tif  32761 cells
+  burn_year_2015.tif  23437 cells
+  burn_year_2016.tif  23167 cells
+  burn_year_2017.tif  37079 cells
+  burn_year_2018.tif  24972 cells
+  burn_year_2019.tif  67564 cells
+  burn_year_2020.tif  43979 cells
+  burn_year_2021.tif  24971 cells
+  burn_year_2022.tif  21238 cells
+  burn_year_2023.tif  45310 cells
+  burn_year_2024.tif  45163 cells
+  burn_year_2025.tif  40589 cells
+
+17 annual rasters + last_burn_year.tif in \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\fire
+exit 0

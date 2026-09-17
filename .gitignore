@@ -26,6 +26,19 @@ Step_1_RF_for_FPI/output/
 
 
 # --------------------------------------------------------------------------- #
+# Validation_GEDI generated data
+# --------------------------------------------------------------------------- #
+# Footprints (532 MB parquet + per-granule checkpoints), per-cell tables
+# (~145 MB) and granule download caches are all rebuilt by Step_02 to Step_04.
+# The summary tables in outputs/analysis/, figures, logs and both .docx stay.
+Validation_GEDI/gedi_granules/
+Validation_GEDI/modis_granules/
+Validation_GEDI/outputs/gedi_parts/
+Validation_GEDI/outputs/**/*.parquet
+Validation_GEDI/outputs/**/gedi_cells_*.csv
+
+
+# --------------------------------------------------------------------------- #
 # Large binary formats, wherever they appear
 # --------------------------------------------------------------------------- #
 # Pickles are also version-fragile: an sklearn pickle rarely survives a library

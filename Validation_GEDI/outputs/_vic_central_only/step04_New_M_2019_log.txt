@@ -1,0 +1,22 @@
+801459 footprints, 14624 NLUM cells
+  burnt within 10 years of acquisition: 4.0% of footprints
+  in a 2019-20 fire footprint            : 1.0%
+
+aggregating
+  all                     14624 cells ->  10901 with >= 30 footprints (p99 kept for 1502)
+  fire-excluded           14159 cells ->  10450 with >= 30 footprints (p99 kept for 1433)
+  FPI averaged over 30 annual rasters
+
+all: 10901 cells
+  FPI 5.46 to 17.31, median p95 AGBD 377.4 Mg/ha
+  median M'/p95 0.81, p95 exceeds M' in 63.9% of cells
+  fixed-n p95 exceeds M' in 62.0% of cells
+  wrote \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\outputs\gedi_cells_all_New_M_2019.csv
+  FPI averaged over 30 annual rasters
+
+unburnt: 10450 cells
+  FPI 5.46 to 17.31, median p95 AGBD 370.1 Mg/ha
+  median M'/p95 0.80, p95 exceeds M' in 64.6% of cells
+  fixed-n p95 exceeds M' in 62.7% of cells
+  wrote \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\outputs\gedi_cells_unburnt_New_M_2019.csv
+exit 0

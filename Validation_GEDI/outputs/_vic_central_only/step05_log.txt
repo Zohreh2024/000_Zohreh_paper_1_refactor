@@ -1,0 +1,62 @@
+801459 footprints
+                                      0  ...                     3
+layer                        New_M_2019  ...  baseline_M_1985-2014
+footprints                          all  ...               unburnt
+cells                             10901  ...                 10450
+M_median                         311.62  ...                341.67
+gedi_mean_median                  166.1  ...                163.92
+gedi_p95_n30_median              368.19  ...                361.36
+gedi_p95_lo_median               352.18  ...                 345.2
+ratio_M_over_p95_n30_median        0.83  ...                  0.98
+spearman_M_vs_mean                 0.76  ...                  0.78
+spearman_M_vs_p95_n30              0.74  ...                  0.76
+exceed_mean_pct                   12.68  ...                  7.76
+exceed_median_pct                  8.46  ...                  5.22
+exceed_p95_lo_pct                 58.85  ...                  48.1
+exceed_p95_n30_pct                61.97  ...                 51.33
+exceed_p95_naive_pct              63.93  ...                 53.36
+exceed_p99_pct_n100               88.28  ...                 80.32
+cells_with_p99                     1502  ...                  1433
+
+[17 rows x 4 columns]
+                  layer   fpi_bin  ...  exceed_p95_lo_pct  exceed_p95_n30_pct
+0            New_M_2019    (0, 8]  ...               50.5                56.8
+1            New_M_2019   (8, 10]  ...               49.4                53.1
+2            New_M_2019  (10, 12]  ...               56.3                59.3
+3            New_M_2019  (12, 14]  ...               66.4                68.9
+4            New_M_2019  (14, 20]  ...               72.2                73.6
+5  baseline_M_1985-2014    (0, 8]  ...               31.5                37.2
+6  baseline_M_1985-2014   (8, 10]  ...               35.9                39.1
+7  baseline_M_1985-2014  (10, 12]  ...               47.7                51.1
+8  baseline_M_1985-2014  (12, 14]  ...               58.4                61.4
+9  baseline_M_1985-2014  (14, 20]  ...               62.4                64.0
+
+[10 rows x 10 columns]
+                  layer  ... exceed_p95_n30_pct
+0            New_M_2019  ...               36.3
+1            New_M_2019  ...               61.3
+2            New_M_2019  ...               70.4
+3  baseline_M_1985-2014  ...               25.4
+4  baseline_M_1985-2014  ...               51.4
+5  baseline_M_1985-2014  ...               58.7
+
+[6 rows x 10 columns]
+                                       0                     1
+layer                         New_M_2019  baseline_M_1985-2014
+cells                               7558                  7558
+fpi_median                        11.945                11.945
+eq1_elasticity_at_median_fpi       1.342                 1.342
+slope_M_prime                      2.632                 2.312
+slope_M_prime_lo95                 2.609                  2.29
+slope_M_prime_hi95                 2.653                 2.331
+slope_gedi_p95_n30                 2.804                 2.804
+slope_gedi_p95_n30_lo95            2.732                 2.732
+slope_gedi_p95_n30_hi95            2.871                 2.871
+slope_gedi_mean                    3.678                 3.678
+slope_gedi_mean_lo95               3.601                 3.601
+slope_gedi_mean_hi95               3.758                 3.758
+   cells  ...  baseline_over_New_M_p90
+0  10450  ...                 1.497624
+
+[1 rows x 4 columns]
+wrote \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\outputs\analysis and \\shares.deakin.edu.au\school-les-m\Planet-A\Current-Users\ZOHREH-KALAHROUDI\000_Zohreh_paper_1_refactor\Validation_GEDI\outputs\figures
