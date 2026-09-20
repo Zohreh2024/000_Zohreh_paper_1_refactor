@@ -1,0 +1,17 @@
+ssp,window,averaging_order,layer,pct_change_vs_New_M_2019_median
+ssp126,2035-2064,mean_of_annual,maxAbgMF_ssp126_2035-2064_mean.tif,1.1266059590908046
+ssp126,2035-2064,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp126_2035-2064.tif,-2.102466091007481
+ssp126,2070-2099,mean_of_annual,maxAbgMF_ssp126_2070-2099_mean.tif,-8.868739800972383
+ssp126,2070-2099,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp126_2070-2099.tif,-12.290652389953825
+ssp245,2035-2064,mean_of_annual,maxAbgMF_ssp245_2035-2064_mean.tif,-6.373450755273292
+ssp245,2035-2064,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp245_2035-2064.tif,-9.943405563868167
+ssp245,2070-2099,mean_of_annual,maxAbgMF_ssp245_2070-2099_mean.tif,-0.8407078597980183
+ssp245,2070-2099,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp245_2070-2099.tif,-3.5405904673494524
+ssp370,2035-2064,mean_of_annual,maxAbgMF_ssp370_2035-2064_mean.tif,-0.7114707107308779
+ssp370,2035-2064,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp370_2035-2064.tif,-3.8310208779717705
+ssp370,2070-2099,mean_of_annual,maxAbgMF_ssp370_2070-2099_mean.tif,-17.355918456892752
+ssp370,2070-2099,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp370_2070-2099.tif,-20.095848486297022
+ssp585,2035-2064,mean_of_annual,maxAbgMF_ssp585_2035-2064_mean.tif,0.9930259340911103
+ssp585,2035-2064,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp585_2035-2064.tif,-1.7924629354265404
+ssp585,2070-2099,mean_of_annual,maxAbgMF_ssp585_2070-2099_mean.tif,-18.62954375813763
+ssp585,2070-2099,eq1_of_mean,maxAbgMF_from_mean_fpi_ssp585_2070-2099.tif,-21.332215414382457

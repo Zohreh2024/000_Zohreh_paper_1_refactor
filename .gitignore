@@ -107,6 +107,32 @@ $RECYCLE.BIN/
 
 
 # --------------------------------------------------------------------------- #
+# FPI_Accuracy_check generated layers  (~8.9 GB)
+# --------------------------------------------------------------------------- #
+# The 30 modelled historical FPI rasters, the four Eq.(1) M denominators and the
+# 256 M' rasters are all rebuilt by Step_01 / Step_03 / Step_04 of that folder.
+# The CSVs, figures and the report are kept, since they are the result.
+FPI_Accuracy_check/output/*.tif
+FPI_Accuracy_check/output_Mprime_rf/
+FPI_Accuracy_check/logs/
+FPI_Accuracy_check/Comparison_vs_New_M_2019/output/cv/
+FPI_Accuracy_check/Comparison_vs_New_M_2019/logs/
+
+
+# --------------------------------------------------------------------------- #
+# Space-for-time validation intermediates
+# --------------------------------------------------------------------------- #
+# `tables/` is Dataframe 2: nine predictor tables of 69,564 cells x 174 columns
+# (~460 MB as npz + slim CSV), rebuilt by Step_02 in about five minutes.
+# `matches*.csv` is one row per site per run, rebuilt by Step_03 in two.
+# Dataframe 1 (reference_table.csv, 4 MB) IS kept - it is the deliverable and
+# rebuilding it needs the whole climate stack.
+Validation_M/National_biomass_library/Space_time_validation/outputs/tables/
+Validation_M/National_biomass_library/Space_time_validation/outputs/matches*.csv
+Validation_M/National_biomass_library/Space_time_validation/logs/
+
+
+# --------------------------------------------------------------------------- #
 # Re-inclusions - MUST stay last
 # --------------------------------------------------------------------------- #
 # gitignore is last-match-wins, so a negation only survives if nothing below it
