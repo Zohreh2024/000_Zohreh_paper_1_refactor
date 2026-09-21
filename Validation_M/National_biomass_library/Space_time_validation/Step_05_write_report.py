@@ -192,6 +192,17 @@ def main():
                 for _, r in ref_sum.iterrows()],
           ["maturity class", "sites", "median AGB (Mg/ha)",
            "median M' today", "median FPI"], widths=[1.5, 0.8, 1.5, 1.4, 1.1])
+    doc.add_paragraph(
+        "Figure 1 shows the sample the whole test rests on. Panel (a) plots "
+        "each surviving site at its longitude and latitude, coloured by "
+        "maturity class, with the marker area scaled to the observed biomass so "
+        "that the heavy sites are visible without a second axis. Panel (b) is "
+        "the distribution of that biomass. Neither panel is a result; they are "
+        "here so that the coverage and the spread of the reference set can be "
+        "judged before any statistic computed from it is read. What to look for "
+        "is the geography: the sites cluster along the forested east, the "
+        "south-west and Tasmania, and the arid interior is almost unsampled, so "
+        "conclusions drawn here do not extend there.")
     figure(doc, "fig_01_reference_sites.png",
            "Figure 1. The reference sites: where they are, and what they carry.")
 
@@ -238,6 +249,22 @@ def main():
     rows = [[label_run(r["run"]), "%.1f%%" % r["pct"], int(r["size"])]
             for _, r in na.iterrows() if r["run"] not in ("same_cell_present_day",)]
     table(doc, rows, ["run", "no analogue", "sites"], widths=[2.4, 1.2, 1.0])
+    doc.add_paragraph(
+        "Figure 3 asks whether the matching worked before any biomass is "
+        "compared. Panel (a) is the distance, in the standardised principal "
+        "component space, between each site and the cell chosen for it: the "
+        "grey histogram is the present-day control, the blue one the eight "
+        "future runs pooled. Panel (b) counts, per run, the sites whose nearest "
+        "candidate is further away than the 99th percentile of the distance "
+        "between historical cells — the no-analogue flag. Panel (c) is the "
+        "great-circle distance from the site to its analogue in kilometres, a "
+        "diagnostic rather than a criterion, since a good climate analogue may "
+        "legitimately sit far away.")
+    doc.add_paragraph(
+        "How to read it: the blue histogram sitting to the right of the grey "
+        "one means future climates are harder to match than present-day ones, "
+        "which is expected and is the point of the exercise. Panel (b) is the "
+        "one to check before quoting any late-century run.")
     figure(doc, "fig_03_match_quality.png",
            "Figure 3. Match quality: how close the analogue is in predictor "
            "space, how often the future has no counterpart at all, and how far "
@@ -287,6 +314,22 @@ def main():
            "M' sits below observed biomass at the median, which immaturity "
            "cannot explain and which needs investigating before the "
            "space-for-time result is used."))
+    doc.add_paragraph(
+        "Figure 2 is the gate, and it involves no matching at all. Panel (a) "
+        "plots, for each site, the biomass measured in the field on the x axis "
+        "against the M' of the 1 km cell the site falls in on the y axis, with "
+        "the 1:1 line dashed. Panel (b) is the same information as the "
+        "distribution of M' divided by observed AGB, with the median marked. "
+        "Both axes are linear and clipped just above the bulk of the data; the "
+        "sites beyond the cut are counted on the panel rather than hidden.")
+    doc.add_paragraph(
+        "How to read it: because M' is a maximum and a field measurement is one "
+        "stand at one moment, the ratio should sit ABOVE 1 for a well-behaved "
+        "layer. A median below 1 cannot be explained by stand immaturity, which "
+        "is why this panel decides how much weight the rest of the report can "
+        "carry. The vertical smear at low observed AGB is the scale mismatch: a "
+        "sub-hectare plot with little biomass inside a 1 km cell whose "
+        "potential is high.")
     figure(doc, "fig_02_present_day_gate.png",
            "Figure 2. The present-day gate. Left: observed AGB against M' at "
            "the same cell, linear axes clipped just above the bulk of the data, "
@@ -356,15 +399,42 @@ def main():
            "At least one run does not beat the random-cell control, which means "
            "the matching adds nothing there and the result should not be "
            "quoted as skill."))
+    doc.add_paragraph(
+        "Figure 4 is the space-for-time comparison itself. For each panel, "
+        "every site was matched to the future cell whose predictors are nearest "
+        "in the PCA space and whose pre-1750 vegetation subgroup is the same; "
+        "the x axis is the biomass observed at the site, the y axis the M' "
+        "projected for its matched cell, and only sites with an analogue are "
+        "drawn. Rows are the two windows, columns the four scenarios. The "
+        "clouds sit below the 1:1 line in every panel, which is the same "
+        "finding as Figure 2 carried through the matching.")
     figure(doc, "fig_04_obs_vs_matched.png",
            "Figure 4. Observed AGB against the M' projected for each site's "
            "future climate analogue, one panel per scenario-window. Each panel "
            "carries n, the median ratio, Spearman rho and the share within a "
            "factor of two for that run; the same numbers, with the rest of the "
            "statistics, are in the tables above.")
+    doc.add_paragraph(
+        "Figure 5 compresses each panel of Figure 4, and each control, to one "
+        "number: the median of M' divided by observed AGB, with a 2,000-sample "
+        "bootstrap interval. The controls are grey. This is the summary figure "
+        "of the analysis, and the comparison it invites is horizontal — each "
+        "future run against the present-day-analogue control and against the "
+        "random-cell null, not against 1.0. Where the intervals of a run and "
+        "the null overlap, that run has not demonstrated skill.")
     figure(doc, "fig_05_ratio_by_run.png",
            "Figure 5. Median ratio with its bootstrap interval, controls in "
            "grey. This is the summary figure of the whole analysis.")
+    doc.add_paragraph(
+        "Figure 6 checks whether a distant analogue is a worse one. Panel (a) "
+        "draws an arrow from each site to the cell matched to it under SSP5-8.5 "
+        "2070-2099, so the direction and length of the climate shift are "
+        "visible. Panel (b) plots agreement against that distance, coloured by "
+        "the distance in predictor space, with the Spearman correlation between "
+        "the two printed on the panel. A correlation near zero means the "
+        "analogue being far away on the ground does not, by itself, make it a "
+        "worse analogue — which is what one wants, since the match is made in "
+        "climate space and not in geography.")
     figure(doc, "fig_06_displacement.png",
            "Figure 6. Where the analogues are, and whether a more distant "
            "analogue agrees less well. Panel (b) carries the Spearman "
