@@ -6,7 +6,7 @@ Reads   output/*.csv, output/cv/*.tif, ../output_Mprime_rf/mean_of_annual/*_mean
 Writes  plots/fig_06_cv_interannual.png        interannual CV, 8 windows + historical
         plots/fig_07_cv_change.png             future CV - historical CV
         plots/fig_08_cv_across_scenarios.png   scenario disagreement
-        plots/fig_09_scatter_vs_New_M_2019.png M' against the reference, per window
+        plots/fig_09_scatter_vs_Revised_M_Roxburgh.png M' against the reference, per window
         plots/fig_10_totals.png                national total biomass
         plots/fig_11_change_by_decile.png      where the change sits in the distribution
 
@@ -300,7 +300,7 @@ def fig_scatter():
     fig.suptitle("Future M' against Revised_M_Roxburgh, cell by cell",
                  fontsize=11, color=INK_2)
     fig.tight_layout()
-    dst = PLOT_DIR / "fig_09_scatter_vs_New_M_2019.png"
+    dst = PLOT_DIR / "fig_09_scatter_vs_Revised_M_Roxburgh.png"
     fig.savefig(dst, dpi=180, bbox_inches="tight")
     plt.close(fig)
     return dst

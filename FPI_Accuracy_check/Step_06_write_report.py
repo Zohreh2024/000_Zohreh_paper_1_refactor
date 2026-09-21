@@ -675,7 +675,7 @@ def main():
         table(doc, rows, ["scenario", "window", "Pearson r", "OLS slope",
                           "bias (t DM/ha)", "RMSE", "% cells down"],
               widths=[0.9, 1.0, 0.9, 0.9, 1.1, 0.7, 1.0])
-        figure(doc, "fig_09_scatter_vs_New_M_2019.png",
+        figure(doc, "fig_09_scatter_vs_Revised_M_Roxburgh.png",
                "Figure 9. M' against Revised_M_Roxburgh, one hexbin per scenario-window. "
                "The dashed line is 1:1; cells below it lose biomass. "
                "The cloud tightens around the line at low biomass and fans out "

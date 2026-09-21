@@ -64,7 +64,7 @@ assuming it.
 | `fig_06_cv_interannual.png` | interannual CV, eight scenario-windows plus the modelled historical period |
 | `fig_07_cv_change.png` | future CV − historical CV, in percentage points |
 | `fig_08_cv_across_scenarios.png` | scenario disagreement, and how it compares with interannual variability |
-| `fig_09_scatter_vs_New_M_2019.png` | M′ against the reference cell by cell, with r, slope, bias, RMSE |
+| `fig_09_scatter_vs_Revised_M_Roxburgh.png` | M′ against the reference cell by cell, with r, slope, bias, RMSE |
 | `fig_10a_national_total.png` | area-weighted national total biomass, Mt DM |
 | `fig_10b_national_total_change.png` | the same as a percentage change |
 | `fig_11_change_by_decile.png` | median change by decile of `New_M_2019` — where in the distribution the loss falls |
