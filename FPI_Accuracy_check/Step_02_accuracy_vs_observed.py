@@ -201,8 +201,10 @@ def figure(obs, pred, df_in, pooled_in, df_oof):
     ax1.set_ylim(0, hi)
     ax1.set_xlabel("observed FPI (DCCEEW)")
     ax1.set_ylabel("modelled FPI (random forest, in sample)")
-    ax1.set_title("R$^2$ = %.4f   RMSE = %.3f   bias = %+.4f"
-                  % (pooled_in["r2"], pooled_in["rmse"], pooled_in["bias"]))
+    ax1.set_title("R$^2$ = %.3f   RMSE = %.3f   MAE = %.3f   bias = %+.4f   "
+                  "slope = %.3f"
+                  % (pooled_in["r2"], pooled_in["rmse"], pooled_in["mae"],
+                     pooled_in["bias"], pooled_in["slope"]), fontsize=10)
     ax1.legend(frameon=False)
     ax1.spines[["top", "right"]].set_visible(False)
 

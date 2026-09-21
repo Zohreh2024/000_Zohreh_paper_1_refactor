@@ -248,6 +248,11 @@ def fig_cv_scenarios():
     ax.set_xlabel("median CV (%)")
     ax.set_xlim(0, max(vals) * 1.25)
     ax.set_title("c) Median CV by kind", loc="left")
+    ax.text(0.98, 0.04,
+            "interannual CV is about %.0fx the across-scenario CV"
+            % (vals[1] / max(vals[2], 1e-9)),
+            transform=ax.transAxes, va="bottom", ha="right", fontsize=8.5,
+            color=INK_2)
 
     fig.suptitle("Across-scenario CV of M'",
                  fontsize=11, color=INK_2)
@@ -290,6 +295,14 @@ def fig_scatter():
             ax.set_xlim(0, hi)
             ax.set_ylim(0, hi)
             ax.set_title("%s  %s" % (label(ssp), win), loc="left")
+            row = df.loc[(ssp, win)]
+            ax.text(0.04, 0.96,
+                    "r = %.3f \nslope = %.3f \nbias = %+.2f \nRMSE = %.1f "
+                    "\nMAE = %.1f"
+                    % (row["pearson_r"], row["slope"], row["bias"],
+                       row["rmse"], row["mae"]),
+                    transform=ax.transAxes, va="top", fontsize=8,
+                    color=INK_2, linespacing=1.45)
             tidy(ax)
 
     for ax in axes[1]:
@@ -443,6 +456,13 @@ def fig_cv_vs_reference():
     ax.set_ylabel("spatial CV of the layer (%)")
     ax.set_ylim(0, max(d["spatial_cv_pct"].max(), ref) * 1.18)
     ax.set_title("a) Spatial CV by scenario-window", loc="left")
+    fut_cv = d["spatial_cv_pct"]
+    ax.text(0.015, 0.70,
+            "reference %.1f%%\nfuture median %.1f%%\nrange %.1f-%.1f%%"
+            % (ref, float(fut_cv.median()), float(fut_cv.min()),
+               float(fut_cv.max())),
+            transform=ax.transAxes, va="top", fontsize=8.5, color=INK_2,
+            linespacing=1.5)
     ax.legend(fontsize=9, ncol=4, loc="upper left", bbox_to_anchor=(0, 0.93))
     tidy(ax, grid_axis="y")
 

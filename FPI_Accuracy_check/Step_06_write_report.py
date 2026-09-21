@@ -282,9 +282,9 @@ def main():
         "flatten the whole picture into one pale shade; the colourbar says so. The accompanying statistics over all 6,956,407 cells and 30 "
         "years are R² %.3f, RMSE %.2f FPI units, MAE %.2f and bias %+.3f — the "
         "bias being the mean of (modelled - observed), so a value this close to "
-        "zero says the forest is not systematically high or low. They are "
-        "printed here rather than on the figure so that the figure stays "
-        "readable."
+        "zero says the forest is not systematically high or low. The headline "
+        "six are printed on the panel itself; the full set, including Lin's "
+        "concordance and Willmott's d, is in the table above."
         % (ins["r2"], ins["rmse"], ins["mae"], ins["bias"]))
     doc.add_paragraph(
         "How to read it: the band should hug the dashed 1:1 line. It does so "
@@ -665,7 +665,8 @@ def main():
             "move a cell far off that line, which is why the statistics below "
             "matter more than the picture: the correlation is high by "
             "construction and it is the slope and the bias that carry the "
-            "information.")
+            "information. Each panel carries r, slope, bias, RMSE and MAE for "
+            "that scenario-window; the same numbers are tabulated below.")
         rows = []
         for _, r in fut_rows.iterrows():
             rows.append([r["ssp"].replace("ssp", "SSP"), r["window"],

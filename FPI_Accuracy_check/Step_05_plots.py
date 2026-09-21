@@ -174,6 +174,15 @@ def fig_accuracy(sample_years):
     ins = summary.loc["in_sample_full_grid"]
     ax1.set_title("a) Modelled against observed FPI, %d-%d"
                   % (min(sample_years), max(sample_years)), loc="left")
+    # Metrics on the panel: they are results, not commentary, and a scatter is
+    # hard to judge without them. The full set is tabulated in the report.
+    ax1.text(0.03, 0.97,
+             "n = %s cell-years%sR$^2$ = %.3f%sRMSE = %.3f%sMAE = %.3f%s"
+             "bias = %+.4f%sslope = %.3f"
+             % (format(int(ins["n"]), ","), "\n", ins["r2"], "\n", ins["rmse"],
+                "\n", ins["mae"], "\n", ins["bias"], "\n", ins["slope"]),
+             transform=ax1.transAxes, va="top", ha="left", fontsize=8.5,
+             color=INK_2, linespacing=1.5)
     tidy(ax1)
 
     ax2.plot(by_year["year"], by_year["r2"], "-o", color=OBS_C, lw=2, ms=4.5,
@@ -184,6 +193,15 @@ def fig_accuracy(sample_years):
     ax2.set_xlabel("year")
     ax2.set_ylabel("R$^2$ of modelled against observed FPI")
     ax2.set_title("b) Accuracy by year", loc="left")
+    gap = float(np.mean(by_year.set_index("year")["r2"]
+                        - oof.set_index("year")["r2"]))
+    ax2.text(0.97, 0.97,
+             "pooled R$^2$:  in sample %.3f,  out of fold %.3f%s"
+             "mean gap %.3f"
+             % (summary.loc["in_sample_full_grid", "r2"],
+                summary.loc["out_of_fold_groupcv_year", "r2"], "\n", gap),
+             transform=ax2.transAxes, va="top", ha="right", fontsize=8.5,
+             color=INK_2, linespacing=1.5)
     ax2.legend(loc="lower left", fontsize=9)
     tidy(ax2, grid_axis="y")
 
