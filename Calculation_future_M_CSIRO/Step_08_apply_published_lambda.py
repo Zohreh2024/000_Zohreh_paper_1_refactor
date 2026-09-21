@@ -11,10 +11,10 @@ Multiplies every MAGB layer written by Step_06 by
 
 writing, per layer,
 
-    output_Mprime/maxAbgMF_<ssp>_<year>.tif                 240
-    output_Mprime/maxAbgMF_<ssp>_<period>_mean.tif            8
-    output_Mprime/maxAbgMF_from_mean_fpi_<ssp>_<period>.tif   8
-    output_Mprime/Mprime_summary.csv
+    output_Mprime_original2004/maxAbgMF_<ssp>_<year>.tif                 240
+    output_Mprime_original2004/maxAbgMF_<ssp>_<period>_mean.tif            8
+    output_Mprime_original2004/maxAbgMF_from_mean_fpi_<ssp>_<period>.tif   8
+    output_Mprime_original2004/Mprime_summary.csv
 
 Units: t DM ha-1. `maxAbgMF` is FullCAM's own name for this variable, as read by
 `RUN_FullCAM2024.py`.
@@ -23,39 +23,27 @@ Lambda is time-invariant, so `lambda * mean_y(M_y)` and `mean_y(lambda * M_y)`
 are the same number; the window layers therefore stay consistent with the annual
 ones however they are recombined downstream.
 
-Which footing - READ THIS
--------------------------
+The footing - READ THIS
+-----------------------
 Eq. (3) is only valid when lambda is paired with the exact M it was divided by.
 `lambda_published.tif` is `New_M_2019 / Original_M_2004`, so its denominator is
 FullCAM's `Original_M_2004` layer.
 
 Step_06's M is Eq. (1) M, which is NOT that layer: Eq. (1) overstates
-`Original_M_2004` by a median factor of 1.46 (31.44 vs 18.65 t DM ha-1), because
-Eq. (1) is the relationship *reported* in the paper, not the Richards & Brack
-(2004) procedure that produced the layer FullCAM ships. See `CLAUDE.md`,
-"Two lambdas", and `Step_02_published_lambda/Comparison_between_lambda_and_ratio/`.
+`Original_M_2004` by a median factor of 1.46 (31.44 vs 18.65 t DM ha-1). So M is
+rescaled onto the Original_M_2004 footing before lambda is applied:
 
-`--footing` therefore selects what M means before lambda is applied:
+    M' = lambda_published * Original_M_2004 * Eq1(FPI_future) / Eq1(FPI_hist)
 
-  eq1            (default, and what was asked for)
-                 M' = lambda_published * Eq1(FPI_future)
-                 Mixed footings. M' is inflated by roughly the 1.46 factor
-                 wherever lambda != 1.
+Every factor then sits on one footing, Eq. (1) cancels out of the ratio, and
+only the *relative* change in productivity comes from the projection while the
+absolute level comes from the layer FullCAM ships. Output goes to
+`output_Mprime_original2004/`.
 
-  original2004   M' = lambda_published * Original_M_2004
-                          * Eq1(FPI_future) / Eq1(FPI_1985-2014)
-                 The delta-change form of REVISED_ORIGINAL_M_2004/Step_06 +
-                 Step_07, re-based on the 30 observed FPI years this random
-                 forest was trained on. Every factor sits on the
-                 Original_M_2004 footing, so Eq. (3) is applied to matched
-                 terms. Eq. (1) cancels out of the ratio, which is why this
-                 route survives the 1.46 problem: only the *relative* change in
-                 productivity is taken from the projection, and the absolute
-                 level comes from the layer FullCAM ships.
-
-Both write the same file names into different directories
-(`output_Mprime/` and `output_Mprime_original2004/`), so the two can coexist and
-be compared rather than silently overwriting one another.
+The unrescaled route - lambda applied directly to Eq. (1) M, which mixed the two
+footings and inflated M' by roughly 1.46 wherever lambda != 1 - was retired in
+September 2026. `--footing` survives for backwards compatibility with callers
+that pass it explicitly, but `original2004` is now its only value.
 
 The `original2004` route needs the historical Eq. (1) baseline, which it builds
 once from the same observed FPI the model was trained on
@@ -223,9 +211,6 @@ def build_scale(footing, hist_m_path=None, out_dir=None):
     built from the observed DCCEEW FPI and cached in `output/`.
     """
     ref = reference()
-    if footing == "eq1":
-        return None
-
     if hist_m_path is not None:
         m_hist = read_on_grid(Path(hist_m_path))
         print(f"  historical denominator: {Path(hist_m_path).name} (supplied)")
@@ -284,8 +269,10 @@ def classify(name):
 def main():
     ap = argparse.ArgumentParser(description="M' = lambda * M with the published lambda")
     ap.add_argument("--jobs", type=int, default=8)
-    ap.add_argument("--footing", choices=["eq1", "original2004"], default="eq1",
-                    help="what M means before lambda is applied (see the module docstring)")
+    ap.add_argument("--footing", choices=["original2004"],
+                    default="original2004",
+                    help="kept for backwards compatibility; the Eq.(1) footing "
+                         "was retired, so original2004 is the only choice")
     ap.add_argument("--hist-m", default=None,
                     help="historical Eq.(1) M raster to use as the ratio "
                          "denominator, instead of building one from the observed "
@@ -303,8 +290,8 @@ def main():
 
     ref = reference()
     valid = ref["valid"]
-    out_dir = Path(args.out_dir) if args.out_dir else STEP_DIR / (
-        "output_Mprime" if args.footing == "eq1" else "output_Mprime_original2004")
+    out_dir = (Path(args.out_dir) if args.out_dir
+               else STEP_DIR / "output_Mprime_original2004")
     out_dir.mkdir(parents=True, exist_ok=True)
     summary_csv = out_dir / "Mprime_summary.csv"
 
@@ -335,12 +322,6 @@ def main():
 
     scale = build_scale(args.footing, args.hist_m, out_dir)
     factor = lam if scale is None else lam * scale       # one multiply per layer
-    if args.footing == "eq1":
-        print("  [NOTE] mixed footings: lambda_published is defined against "
-              "Original_M_2004, while M is Eq.(1) M. M' is inflated by roughly "
-              "the 1.46 median ratio wherever lambda != 1. Use "
-              "--footing original2004 for the matched-footing version.\n")
-
     common_tags = dict(
         units="t DM ha-1",
         long_name="Future revised maximum above-ground biomass (M')",
@@ -350,16 +331,11 @@ def main():
         lambda_definition="New_M_2019 / Original_M_2004 (DCCEEW Ratio_OriginalM_to_NewM)",
         footing=args.footing,
     )
-    if args.footing == "original2004":
-        common_tags["m_footing"] = ("Original_M_2004 x Eq1(FPI_future) / "
-                                    "Eq1(FPI_1985-2014)")
-        common_tags["hist_denominator"] = (
-            str(args.hist_m) if args.hist_m
-            else "Eq1(mean observed DCCEEW FPI 1985-2014)")
-    else:
-        common_tags["m_footing"] = "Eq.(1) M from the projected FPI, unrescaled"
-        common_tags["caveat"] = ("lambda's denominator is Original_M_2004, not "
-                                 "Eq.(1) M - see the script docstring")
+    common_tags["m_footing"] = ("Original_M_2004 x Eq1(FPI_future) / "
+                                "Eq1(FPI_1985-2014)")
+    common_tags["hist_denominator"] = (
+        str(args.hist_m) if args.hist_m
+        else "Eq1(mean observed DCCEEW FPI 1985-2014)")
 
     def one(src):
         m = read_on_grid(src)

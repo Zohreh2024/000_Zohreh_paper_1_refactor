@@ -28,10 +28,9 @@ PLOT_DIR = HERE / "plots"
 REPORT_STEM = "Space_time_validation_report"
 
 INK_2 = RGBColor(0x52, 0x51, 0x4E)
-CONTROLS = ["same_cell_present_day", "same_cell_eq1_footing",
-            "historical_analogue", "random_cells"]
+CONTROLS = ["same_cell_present_day", "historical_analogue",
+            "random_cells"]
 CONTROL_LABEL = {"same_cell_present_day": "the site's own cell, today",
-                 "same_cell_eq1_footing": "the same cell, Eq. (1) footing",
                  "historical_analogue": "present-day analogue",
                  "random_cells": "random cells (null)"}
 SSPS = ["ssp126", "ssp245", "ssp370", "ssp585"]
@@ -147,6 +146,25 @@ def main():
         "site actually carries. If it does, the chain climate → FPI → Eq. (1) → "
         "λ is transporting a climate signal correctly rather than interpolating "
         "inside the range it was fitted on.")
+    if "_mean_of_annual" in args.suffix:
+        doc.add_paragraph(
+            "The M' validated here is the PER-YEAR variant: Eq. (1) applied to "
+            "each annual FPI and the results averaged, on both sides of the "
+            "ratio, from FPI_Accuracy_check/output_Mprime_rf/mean_of_annual/. "
+            "It is the sensitivity, not the method. The method - Eq. (1) of the "
+            "window-mean FPI - is validated in the unsuffixed report, and the "
+            "two agree to within 0.73% of the median ratio in every run.")
+    else:
+        doc.add_paragraph(
+            "The M' validated here is the current one: Eq. (1) applied to the "
+            "window-mean FPI on both sides of the ratio, the layer in "
+            "FPI_Accuracy_check/output_Mprime_rf/eq1_of_mean/. The predictor "
+            "tables were rebuilt against it rather than re-labelled - the M' "
+            "they store is bit-identical to that raster at every sampled cell, "
+            "and differs from the per-year layer by up to 9 t DM ha-1 - and the "
+            "whole chain was rerun on it: tables, matching, the controls, the "
+            "figures and this report. The per-year route is kept as the "
+            "_mean_of_annual variant for comparison.")
     doc.add_paragraph(
         "Two dataframes, as specified. Dataframe 1 is the reference table: one "
         "row per NBL site, restricted to mature vegetation with good data, "
@@ -207,6 +225,37 @@ def main():
            "Figure 1. The reference sites: where they are, and what they carry.")
 
     # ------------------------------------------------------------------ #
+    doc.add_heading("Where FPI enters, and where it deliberately does not",
+                    level=2)
+    doc.add_paragraph(
+        "FPI has three distinct roles here, and they are easy to conflate.")
+    for t in [
+        "It is inside the quantity being tested. M' is Eq. (1) of the modelled "
+        "FPI, rescaled by lambda and Original_M_2004, so FPI drives everything "
+        "the comparison judges.",
+        "It is carried as a column and used for one control. The reference "
+        "table holds fpi_hist, the forest's modelled 1985-2014 mean FPI at each "
+        "site; the future tables hold the projected window-mean FPI; and every "
+        "match records the FPI of the cell it was matched to. fpi_hist also "
+        "feeds the Eq. (1)-footing control, which is how the 1.22 figure in the "
+        "gate section is produced.",
+        "It is NOT a matching variable, on purpose. The match runs on the 174 "
+        "random-forest predictors - 83 soil bands and 91 climate features - "
+        "never on FPI itself.",
+    ]:
+        doc.add_paragraph(t, style="List Bullet")
+    doc.add_paragraph(
+        "The third point is the one that decides what this test is worth. M' is "
+        "a deterministic function of FPI through Eq. (1) and lambda, so matching "
+        "sites to cells on FPI would pair each site with a cell that already "
+        "carries almost the same M' by construction, and the exercise would "
+        "collapse into a restatement of the present-day gate. Matching on "
+        "climate and soil instead exercises the whole chain: whether the forest "
+        "turns a future climate into a sensible FPI, whether Eq. (1) turns that "
+        "FPI into a sensible biomass, and whether lambda transports the result "
+        "onto the footing FullCAM reads. FPI is what is being tested, not what "
+        "the test matches on.")
+
     doc.add_heading("The match", level=1)
     doc.add_paragraph(
         "All 174 predictors are standardised by the historical land-cell mean "
@@ -336,31 +385,6 @@ def main():
            "1:1 dashed, with n, median ratio, Spearman rho, the share within a "
            "factor of two and RMSE on the panel. Right: the distribution of the "
            "ratio, cut at 6 with the number of sites beyond it stated.")
-
-    if "same_cell_eq1_footing" in found.index:
-        eq1 = found.loc["same_cell_eq1_footing"]
-        doc.add_paragraph(
-            "How much of that is the footing? Evaluating Eq. (1) on the same "
-            "modelled FPI at the same cells — the unmatched, Eq. (1) footing — "
-            "gives a median ratio of %s against %s on the matched footing, a "
-            "factor of %.2f between them. The two footings therefore straddle "
-            "the observations: Eq. (1) M sits above observed mature biomass, "
-            "which is the direction a maximum should err in, while λ × "
-            "Original_M_2004 sits below it, which immaturity cannot explain. "
-            "Rank agreement is poor either way (Spearman ρ %s and %s), so the "
-            "choice of footing moves the level and neither footing reproduces "
-            "the ranking of these sites."
-            % (fmt(eq1["median_ratio"]), fmt(gate["median_ratio"]),
-               eq1["median_ratio"] / gate["median_ratio"],
-               fmt(eq1["spearman_rho"]), fmt(gate["spearman_rho"])))
-        doc.add_paragraph(
-            "That is a finding about the footing decision, not about climate "
-            "change, and it belongs beside the footing memo rather than in the "
-            "projection. It does not favour one footing on its own: the NBL "
-            "sample is a filtered mature subset with a median of %s Mg ha⁻¹, "
-            "well above the domain median, so a layer calibrated to the whole "
-            "continent is expected to sit below it."
-            % fmt(gate["obs_median"], "%.0f"))
 
     doc.add_heading("Controls", level=2)
     doc.add_paragraph(

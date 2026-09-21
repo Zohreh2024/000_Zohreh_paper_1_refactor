@@ -1,37 +1,19 @@
 group,ssp,window,series,stat,value,source
 "1985-2014
-baseline",baseline,1985-2014,Eq1 M (Eq. 1 footing),median,31.872407913208008,Eq1_M_histRF_mean_of_annual.tif
-"1985-2014
-baseline",baseline,1985-2014,M' (matched footing),median,20.432025909423828,New_M_2019_NLUM.tif
+baseline",baseline,1985-2014,M',median,20.432025909423828,New_M_2019_NLUM.tif
 "SSP1-2.6
-2035-2064",ssp126,2035-2064,Eq1 M (Eq. 1 footing),median,29.363998413085938,M_ssp126_2035-2064_mean.tif
+2035-2064",ssp126,2035-2064,M',median,19.50124740600586,maxAbgMF_from_mean_fpi_ssp126_2035-2064.tif
+"SSP2-4.5
+2035-2064",ssp245,2035-2064,M',median,17.623994827270508,maxAbgMF_from_mean_fpi_ssp245_2035-2064.tif
+"SSP3-7.0
+2035-2064",ssp370,2035-2064,M',median,19.185386657714844,maxAbgMF_from_mean_fpi_ssp370_2035-2064.tif
+"SSP5-8.5
+2035-2064",ssp585,2035-2064,M',median,20.093050003051758,maxAbgMF_from_mean_fpi_ssp585_2035-2064.tif
 "SSP1-2.6
-2035-2064",ssp126,2035-2064,M' (matched footing),median,19.50124740600586,maxAbgMF_from_mean_fpi_ssp126_2035-2064.tif
+2070-2099",ssp126,2070-2099,M',median,16.962261199951172,maxAbgMF_from_mean_fpi_ssp126_2070-2099.tif
 "SSP2-4.5
-2035-2064",ssp245,2035-2064,Eq1 M (Eq. 1 footing),median,25.85446548461914,M_ssp245_2035-2064_mean.tif
-"SSP2-4.5
-2035-2064",ssp245,2035-2064,M' (matched footing),median,17.623994827270508,maxAbgMF_from_mean_fpi_ssp245_2035-2064.tif
+2070-2099",ssp245,2070-2099,M',median,19.202409744262695,maxAbgMF_from_mean_fpi_ssp245_2070-2099.tif
 "SSP3-7.0
-2035-2064",ssp370,2035-2064,Eq1 M (Eq. 1 footing),median,28.440397262573242,M_ssp370_2035-2064_mean.tif
-"SSP3-7.0
-2035-2064",ssp370,2035-2064,M' (matched footing),median,19.185386657714844,maxAbgMF_from_mean_fpi_ssp370_2035-2064.tif
+2070-2099",ssp370,2070-2099,M',median,15.420231819152832,maxAbgMF_from_mean_fpi_ssp370_2070-2099.tif
 "SSP5-8.5
-2035-2064",ssp585,2035-2064,Eq1 M (Eq. 1 footing),median,29.507225036621094,M_ssp585_2035-2064_mean.tif
-"SSP5-8.5
-2035-2064",ssp585,2035-2064,M' (matched footing),median,20.093050003051758,maxAbgMF_from_mean_fpi_ssp585_2035-2064.tif
-"SSP1-2.6
-2070-2099",ssp126,2070-2099,Eq1 M (Eq. 1 footing),median,24.947908401489258,M_ssp126_2070-2099_mean.tif
-"SSP1-2.6
-2070-2099",ssp126,2070-2099,M' (matched footing),median,16.962261199951172,maxAbgMF_from_mean_fpi_ssp126_2070-2099.tif
-"SSP2-4.5
-2070-2099",ssp245,2070-2099,Eq1 M (Eq. 1 footing),median,28.170549392700195,M_ssp245_2070-2099_mean.tif
-"SSP2-4.5
-2070-2099",ssp245,2070-2099,M' (matched footing),median,19.202409744262695,maxAbgMF_from_mean_fpi_ssp245_2070-2099.tif
-"SSP3-7.0
-2070-2099",ssp370,2070-2099,Eq1 M (Eq. 1 footing),median,21.952550888061523,M_ssp370_2070-2099_mean.tif
-"SSP3-7.0
-2070-2099",ssp370,2070-2099,M' (matched footing),median,15.420231819152832,maxAbgMF_from_mean_fpi_ssp370_2070-2099.tif
-"SSP5-8.5
-2070-2099",ssp585,2070-2099,Eq1 M (Eq. 1 footing),median,21.933300018310547,M_ssp585_2070-2099_mean.tif
-"SSP5-8.5
-2070-2099",ssp585,2070-2099,M' (matched footing),median,15.533135414123535,maxAbgMF_from_mean_fpi_ssp585_2070-2099.tif
+2070-2099",ssp585,2070-2099,M',median,15.533135414123535,maxAbgMF_from_mean_fpi_ssp585_2070-2099.tif

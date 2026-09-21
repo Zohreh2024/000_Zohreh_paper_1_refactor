@@ -48,10 +48,9 @@ PLOT_DIR = HERE / "plots"
 
 SSPS = ["ssp126", "ssp245", "ssp370", "ssp585"]
 WINDOWS = ["2035-2064", "2070-2099"]
-CONTROLS = ["same_cell_present_day", "same_cell_eq1_footing",
-            "historical_analogue", "random_cells"]
+CONTROLS = ["same_cell_present_day", "historical_analogue",
+            "random_cells"]
 CONTROL_LABEL = {"same_cell_present_day": "the site's own cell, today",
-                 "same_cell_eq1_footing": "the same cell, Eq. (1) footing",
                  "historical_analogue": "present-day analogue",
                  "random_cells": "random cells (null)"}
 

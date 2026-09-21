@@ -785,8 +785,6 @@ def main():
         bars_csv = COMP_OUT / "paired_bar_medians.csv"
         if bars_csv.exists():
             bars = pd.read_csv(bars_csv)
-            base_eq1 = float(bars[(bars["ssp"] == "baseline") &
-                                  (bars["series"].str.startswith("Eq1"))]["value"].iloc[0])
             base_mp = float(bars[(bars["ssp"] == "baseline") &
                                  (bars["series"].str.startswith("M'"))]["value"].iloc[0])
             mp_vals = bars[bars["series"].str.startswith("M'")]
@@ -814,33 +812,6 @@ def main():
                    "Figure 13. Median M' across land cells for each "
                    "scenario-window, all components from the random forest. "
                    "Hatched: the 1985-2014 baseline. Dashed: Revised_M_Roxburgh.",
-                   folder=COMP_PLOTS)
-
-            doc.add_heading("The two footings on one axis", level=2)
-            doc.add_paragraph(
-                "Figure 12 puts the footing question and the climate signal in a "
-                "single panel, because they are routinely confused. The orange "
-                "bars are Eq. (1) M used as written; the navy bars are M' on the "
-                "matched footing. The hatched pair on the left is 1985-2014, and "
-                "the dashed line is the median of Revised_M_Roxburgh, %.2f t DM ha⁻¹."
-                % base_mp)
-            doc.add_paragraph(
-                "Read it vertically and the orange-to-navy gap is the footing: "
-                "%.2f against %.2f t DM ha⁻¹ in the baseline pair, a factor of "
-                "%.2f. That gap is arithmetic, not climate — Eq. (1) is the "
-                "relationship reported in the paper, while Original_M_2004 is the "
-                "layer the Richards & Brack (2004) procedure produced and the one "
-                "FullCAM ships. Read it horizontally and the navy bars' distance "
-                "from the dashed line is the projected change, which is the only "
-                "part of the figure that carries a climate signal. The navy "
-                "baseline bar sits exactly on the line, as it must."
-                % (base_eq1, base_mp, base_eq1 / base_mp))
-            figure(doc, "fig_12_paired_bars.png",
-                   "Figure 12. Median M across land cells: Eq. (1) M and matched-"
-                   "footing M' for each scenario-window, against the 1985-2014 "
-                   "baseline (hatched) and the Revised_M_Roxburgh reference (dashed). "
-                   "Quoting an orange bar where a navy one belongs inflates M by "
-                   "roughly %.0f%%." % (100 * (base_eq1 / base_mp - 1)),
                    folder=COMP_PLOTS)
 
     doc.add_heading("What to do with this", level=1)

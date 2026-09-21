@@ -379,24 +379,12 @@ def main():
         same["mvs_match"] = site_cls
     frames.append(same)
 
-    # --- control 2: the same cell, on the Eq. (1) footing ----------------- #
-    # M' and Eq. (1) M differ by a fixed factor, so this says how much of any
-    # level disagreement is the footing choice rather than the model. Eq. (1)
-    # with the parabola cut at its root, exactly as the pipeline applies it.
-    eq1_root = (5.291 / 6.011) ** 2
-    eq1 = (6.011 * np.sqrt(np.clip(ref["fpi_hist"].to_numpy(), eq1_root, None))
-           - 5.291) ** 2
-    eq1_frame = same.copy()
-    eq1_frame["run"] = "same_cell_eq1_footing"
-    eq1_frame["M_matched"] = eq1
-    frames.append(eq1_frame)
-
-    # --- control 3: present-day analogue ---------------------------------- #
+    # --- control 2: present-day analogue ---------------------------------- #
     frames.append(run_one("historical_analogue", ref, ref_P, hist, hist_P, cutoff,
                           site_class=site_cls, pool_class=pool_cls,
                           min_cells=args.min_class_cells))
 
-    # --- control 4: random ----------------------------------------------- #
+    # --- control 3: random ----------------------------------------------- #
     frames.append(run_one("random_cells", ref, ref_P, hist, hist_P, cutoff,
                           random_match=True, site_class=site_cls,
                           pool_class=pool_cls, min_cells=args.min_class_cells))

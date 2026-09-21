@@ -1,17 +1,13 @@
 # Option_B_matched_footing/
 
-Option B of `Calculation_future_M_CSIRO/Footing_decision_M_prime.docx`: future
-M′ built on the **Original_M_2004 footing**, so that λ multiplies the
-layer it was actually divided by.
+Future M′ on the **Original_M_2004 footing**, so that λ multiplies the layer it
+was actually divided by. This is the footing the project uses; the Eq.(1)
+footing was retired in September 2026.
 
 ```
 M'_future  =  λ × Original_M_2004 × Eq1(FPI_future) ÷ Eq1(FPI_1985-2014)
 ```
 
-**Nothing outside this folder was modified**, with one deliberate exception
-noted under Step 01. `Calculation_future_M_CSIRO/output_Mprime/` (Option A) and
-`FullCAM_input_CSIRO_data/M/` are untouched, so the current pipeline still
-runs exactly as before and the footing decision can still go either way.
 
 ## Running it
 
@@ -117,33 +113,27 @@ silently reintroduce the mixed footing.
 
 ## Acceptance tests (Step 04)
 
-**1. The climate signal is preserved.** Holding the historical denominator
-convention fixed, Option B's change against its baseline equals Option A's,
-to a maximum of **1.9e-04 percentage points** over all 6,956,407 cells and all
-eight windows. The footing cancels out of each route's own ratio, as it must.
+Three checks, all on the matched footing; the script exits non-zero if any
+fails.
 
-**2. The level drops.** Per-cell median of Option A ÷ Option B is **×1.456**.
+**1. The historical limit is exact.** Setting `FPI_future = FPI_historical`
+must return `New_M_2019`, since the ratio is then 1. Measured through the
+factors Step_08 actually used: median relative error **2.8e-08**, p99 1.0e-07.
+This is what makes the FullCAM boundary continuous — the historical input
+FullCAM reads and the historical limit of the future inputs are one layer.
 
-**3. The FullCAM boundary is repaired.** This is the point of the exercise. The
-FullCAM historical input is `New_M_2019`, so it is already on the
-Original_M_2004 footing. The step from it to the future inputs:
+**2. The step FullCAM sees is the projected change and nothing else.** On the
+matched footing this holds by construction; the test catches a broken rebuild.
+Measured on the layers Step_03 writes: **−21.3% to −1.8%** across the eight
+scenario-windows, negative in every one.
 
-| | step FullCAM sees |
-|---|---|
-| Option A (Eq. (1) footing) | **+21.6% to +53.2%** |
-| Option B (this folder) | **−21.3% to −1.8%** |
+**3. Every written layer is sound on the grid.** No non-finite value inside the
+NLUM mask, nothing outside it, no negative M'. All eight pass.
 
-Under Option A the step is a footing change wearing the costume of a climate
-change, and it points the wrong way. Under Option B the step **is** the
-projected change, in every scenario and window. See
-`figures/fig_boundary_repaired.png`.
-
-Those figures are on the mean-FPI layer, the one Step_03 writes. On the per-year
-layer (`--order mean_of_annual`) the same test gives A +26.4% to +60.2% and
-B −18.6% to +1.1% — note that two of Option B's eight windows came out positive
-there, because a per-year numerator was being divided by a mean-FPI denominator.
-Pairing the orders removes the sign flips: on the method every window is
-negative.
+The Eq.(1)-footing route — λ applied directly to Eq. (1) M, which mixed the two
+footings — was retired in September 2026. The A-versus-B comparisons this
+folder used to carry (the climate-signal cancellation, the ×1.456 level ratio,
+the two-footing boundary figure) went with it and are in the git history.
 
 ## An inconsistency this rebuild exposed — read before quoting any change
 
