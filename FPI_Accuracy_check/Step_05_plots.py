@@ -163,25 +163,21 @@ def fig_accuracy(sample_years):
              fontsize=9)
     ax1.set_xlim(0, hi)
     ax1.set_ylim(0, hi)
-    ax1.set_xlabel("observed FPI (DCCEEW)")
-    ax1.set_ylabel("modelled FPI (random forest)")
+    ax1.set_xlabel("observed FPI, DCCEEW 1 km layer (dimensionless)")
+    ax1.set_ylabel("modelled FPI, random forest (dimensionless)")
     ins = summary.loc["in_sample_full_grid"]
-    ax1.set_title("a) Modelled against observed FPI, all %d years "
-                  "(%d-%d)\nin sample: R$^2$ %.3f, RMSE %.2f, bias %+.3f"
-                  % (len(sample_years), min(sample_years), max(sample_years),
-                     ins["r2"], ins["rmse"], ins["bias"]), loc="left")
+    ax1.set_title("a) Modelled against observed FPI, %d-%d"
+                  % (min(sample_years), max(sample_years)), loc="left")
     tidy(ax1)
 
     ax2.plot(by_year["year"], by_year["r2"], "-o", color=OBS_C, lw=2, ms=4.5,
-             label="in sample, full grid")
+             label="in sample")
     ax2.plot(oof["year"], oof["r2"], "-s", color=MOD_C, lw=2, ms=4.5,
-             label="out of fold (year-group CV)")
+             label="out of fold")
     ax2.set_ylim(0.88, 1.0)
     ax2.set_xlabel("year")
-    ax2.set_ylabel("R$^2$")
-    ax2.set_title("b) Accuracy year by year\nquote the out-of-fold line: "
-                  "pooled R$^2$ %.3f" % summary.loc["out_of_fold_groupcv_year", "r2"],
-                  loc="left")
+    ax2.set_ylabel("R$^2$ of modelled against observed FPI")
+    ax2.set_title("b) Accuracy by year", loc="left")
     ax2.legend(loc="lower left", fontsize=9)
     tidy(ax2, grid_axis="y")
 
@@ -213,12 +209,12 @@ def fig_hist_maps():
 
     fig, axes = plt.subplots(1, 3, figsize=(12.6, 4.6))
     im0 = show_map(axes[0], obs, ext, SEQ_BLUE, vmin=0, vmax=hi,
-                   title="a) Observed mean FPI, 1985-2014")
+                   title="a) Observed mean FPI")
     im1 = show_map(axes[1], mod, ext, SEQ_BLUE, vmin=0, vmax=hi,
-                   title="b) Modelled mean FPI, same years")
+                   title="b) Modelled mean FPI")
     im2 = show_map(axes[2], diff, ext, DIVERGING,
                    norm=TwoSlopeNorm(vmin=-lim, vcenter=0, vmax=lim),
-                   title="c) Modelled - observed")
+                   title="c) Modelled minus observed")
 
     for im, ax, lab in [(im0, axes[0], "FPI"), (im1, axes[1], "FPI"),
                         (im2, axes[2], "FPI difference")]:
@@ -228,9 +224,8 @@ def fig_hist_maps():
         cb.ax.tick_params(labelsize=8, length=2)
 
     med = float(np.nanmedian(diff))
-    fig.suptitle("Modelled and observed historical FPI agree in pattern and in level "
-                 "(median difference %+.3f FPI units)" % med,
-                 fontsize=10.5, y=1.0, color=INK_2)
+    fig.suptitle("Mean Forest Productivity Index, 1985-2014",
+                 fontsize=11, y=1.0, color=INK_2)
     fig.tight_layout()
     dst = PLOT_DIR / "fig_02_hist_fpi_maps.png"
     fig.savefig(dst, dpi=200, bbox_inches="tight")
@@ -243,6 +238,11 @@ def fig_hist_maps():
 # --------------------------------------------------------------------------- #
 
 def fig_denominator():
+    """Three standalone figures about the historical denominator of M′.
+
+    Separate files rather than one three-panel figure: the titles have to say
+    what each quantity is, and at that length they collide in one row.
+    """
     comp = pd.read_csv(OUT_DIR / "hist_M_denominator_comparison.csv")
 
     def med(label):
@@ -261,48 +261,53 @@ def fig_denominator():
         r_ofmean = (rf_m / ob_m)[m & np.isfinite(rf_m) & np.isfinite(ob_m) & (ob_m > 0)]
         jensen = (rf / rf_m)[m & np.isfinite(rf) & np.isfinite(rf_m) & (rf_m > 0)]
 
-    fig = plt.figure(figsize=(13.2, 4.6))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.25, 1, 1], wspace=0.42)
-
-    ax0 = fig.add_subplot(gs[0])
-    im = show_map(ax0, ratio, ext, DIVERGING,
+    fig, ax = plt.subplots(figsize=(6.8, 5.6))
+    im = show_map(ax, ratio, ext, DIVERGING,
                   norm=TwoSlopeNorm(vmin=0.8, vcenter=1.0, vmax=1.2),
-                  title="a) Modelled / observed historical M")
-    cb = fig.colorbar(im, ax=ax0, fraction=0.045, pad=0.03, extend="both")
-    cb.set_label("ratio", fontsize=8.5, labelpad=2)
+                  title="a) Historical M: modelled FPI $\div$ observed FPI")
+    cb = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.03, extend="both")
+    cb.set_label("ratio", fontsize=8.5)
     cb.outline.set_visible(False)
     cb.ax.tick_params(labelsize=8, length=2)
-
-    ax1 = tidy(fig.add_subplot(gs[1]), grid_axis="y")
-    bins = np.linspace(0.6, 1.4, 90)
-    ax1.hist(r_annual, bins=bins, color=MOD_C, alpha=0.85, label="mean of annual M")
-    ax1.hist(r_ofmean, bins=bins, histtype="step", lw=2, color=OBS_C,
-             label="Eq. (1) of mean FPI")
-    ax1.axvline(1.0, color=INK_MUTED, lw=1.2, ls="--")
-    ax1.set_xlabel("modelled M $\\div$ observed M")
-    ax1.set_ylabel("cells")
-    ax1.set_yticklabels([])
-    ax1.set_title("b) The denominator swap\nmedian %.4f (per-year order)"
-                  % med("RF / OBS, mean_of_annual"), loc="left")
-    ax1.legend(fontsize=9, loc="upper left", bbox_to_anchor=(0.0, 0.98))
-
-    ax2 = tidy(fig.add_subplot(gs[2]), grid_axis="y")
-    ax2.hist(jensen, bins=np.linspace(1.0, 1.4, 90), color=MOD_C, alpha=0.85)
-    ax2.axvline(1.0, color=INK_MUTED, lw=1.2, ls="--")
-    ax2.axvline(med("RF: mean_of_annual"), color=INK, lw=1.4)
-    ax2.text(med("RF: mean_of_annual") + 0.008, ax2.get_ylim()[1] * 0.88,
-             "median %.4f" % med("RF: mean_of_annual"), fontsize=9, color=INK)
-    ax2.set_xlabel("mean$_y$ Eq1(FPI$_y$) $\\div$ Eq1(mean$_y$ FPI$_y$)")
-    ax2.set_yticklabels([])
-    ax2.set_title("c) The averaging order (Jensen gap)\nsame layers, "
-                  "two orders of operations", loc="left")
-
-    fig.suptitle("The modelled denominator barely moves the level; the averaging "
-                 "order moves it ~3%", fontsize=10.5, y=1.02, color=INK_2)
-    dst = PLOT_DIR / "fig_03_denominator.png"
-    fig.savefig(dst, dpi=200, bbox_inches="tight")
+    fig.tight_layout()
+    a_path = PLOT_DIR / "fig_03a_denominator_map.png"
+    fig.savefig(a_path, dpi=190, bbox_inches="tight")
     plt.close(fig)
-    return dst
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.9))
+    bins = np.linspace(0.6, 1.4, 90)
+    ax.hist(r_annual, bins=bins, color=MOD_C, alpha=0.85,
+            label="per-year order: mean$_y$[Eq1(FPI$_y$)]")
+    ax.hist(r_ofmean, bins=bins, histtype="step", lw=2, color=OBS_C,
+            label="mean-FPI order: Eq1(mean$_y$ FPI$_y$)")
+    ax.axvline(1.0, color=INK_MUTED, lw=1.2, ls="--")
+    ax.set_xlabel("Eq1(FPI modelled) / Eq1(FPI observed), 1985-2014")
+    ax.set_ylabel("number of 1 km cells")
+    ax.set_yticklabels([])
+    ax.set_title("b) Distribution of that ratio", loc="left")
+    ax.legend(fontsize=9, loc="upper left")
+    tidy(ax, grid_axis="y")
+    fig.tight_layout()
+    b_path = PLOT_DIR / "fig_03b_denominator_ratio.png"
+    fig.savefig(b_path, dpi=190)
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.9))
+    ax.hist(jensen, bins=np.linspace(1.0, 1.4, 90), color=MOD_C, alpha=0.85)
+    ax.axvline(1.0, color=INK_MUTED, lw=1.2, ls="--")
+    ax.axvline(med("RF: mean_of_annual"), color=INK, lw=1.4)
+    ax.text(med("RF: mean_of_annual") + 0.008, ax.get_ylim()[1] * 0.88,
+            "median %.4f" % med("RF: mean_of_annual"), fontsize=9, color=INK)
+    ax.set_xlabel("mean$_y$[Eq1(FPI$_y$)] / Eq1(mean$_y$ FPI$_y$), same 30 modelled layers")
+    ax.set_ylabel("number of 1 km cells")
+    ax.set_yticklabels([])
+    ax.set_title("c) Averaging-order ratio, same layers", loc="left")
+    tidy(ax, grid_axis="y")
+    fig.tight_layout()
+    c_path = PLOT_DIR / "fig_03c_averaging_order.png"
+    fig.savefig(c_path, dpi=190)
+    plt.close(fig)
+    return a_path
 
 
 # --------------------------------------------------------------------------- #
@@ -349,8 +354,8 @@ def fig_mprime_change(valid):
     figs = [plt.subplots(figsize=(7.4, 4.9)) for _ in range(2)]
     axes = [a for _, a in figs]
     titles = {
-        "eq1_of_mean": "a) THE METHOD: Eq1(mean$_y$ FPI$_y$), both sides",
-        "mean_of_annual": "b) Sensitivity: mean$_y$ Eq1(FPI$_y$), both sides",
+        "eq1_of_mean": "a) M′ = New_M_2019 x Eq1(mean FPI$_{future}$) $\div$ Eq1(mean FPI$_{1985-2014}$)",
+        "mean_of_annual": "b) M′ = New_M_2019 x mean$_y$[Eq1(FPI$_y$)] $\div$ mean$_y$[Eq1(FPI$_y$, hist)]",
     }
     for ax, order in zip(axes, ["eq1_of_mean", "mean_of_annual"]):
         d = df[df["averaging_order"] == order].sort_values(["window", "ssp"])
@@ -378,6 +383,8 @@ def fig_mprime_change(valid):
         ax.set_ylim(lo - 4.5, hi)
         ax.set_ylabel("median change in M′ against New_M_2019 (%)")
         ax.legend(loc="lower left", fontsize=9)
+        fig.suptitle("Change in future M′ against New_M_2019",
+                     fontsize=11, color=INK_2, y=1.0)
         fig.tight_layout()
         dst = PLOT_DIR / (name + ".png")
         fig.savefig(dst, dpi=200, bbox_inches="tight")
@@ -420,8 +427,8 @@ def fig_change_maps():
         cb.outline.set_visible(False)
         cb.ax.tick_params(labelsize=8, length=2)
 
-    fig.suptitle("Projected change in M' on the fully modelled footing, per-year "
-                 "averaging order", fontsize=11, color=INK_2)
+    fig.suptitle("Change in M' against New_M_2019, per cell",
+                 fontsize=11, color=INK_2)
     dst = PLOT_DIR / "fig_05_mprime_change_maps.png"
     fig.savefig(dst, dpi=190, bbox_inches="tight")
     plt.close(fig)

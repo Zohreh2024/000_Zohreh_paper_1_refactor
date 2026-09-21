@@ -190,19 +190,9 @@ def plot_rf_only(df, ref, stat, groups):
     ax.set_axisbelow(True)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.12), ncol=2, fontsize=9.5)
 
-    fig.suptitle("Future M' with every component modelled by the random forest, "
-                 "against the historical baseline it is built on",
-                 fontsize=10.5, color=INK_2, y=0.99)
-    # These percentages are the shift in the median, which is NOT the median of
-    # the per-cell changes reported elsewhere (a median is not additive). Both
-    # are correct; they answer different questions, so the figure says which.
-    fig.text(0.01, 0.015,
-             "Percentages are the change in the median M', i.e. median(M') "
-             "against median(New_M_2019). The median of the per-cell changes is "
-             "a different statistic and is the one tabulated in "
-             "comparison_vs_New_M_2019.csv.",
-             fontsize=8, color=INK_2)
-    fig.tight_layout(rect=(0, 0.035, 1, 0.94))
+    fig.suptitle("Median future M' against the 1985-2014 baseline",
+                 fontsize=11, color=INK_2, y=0.99)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     dst = PLOT_DIR / "fig_13_rf_mprime_bars.png"
     fig.savefig(dst, dpi=200)
     fig.savefig(dst.with_suffix(".pdf"))
@@ -277,9 +267,8 @@ def main():
     ax.set_axisbelow(True)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, 1.13), ncol=3, fontsize=9.5)
 
-    fig.suptitle("Two footings, one reference: the vertical gap is the footing, "
-                 "the movement away from the dashed line is the climate signal",
-                 fontsize=10.5, color=INK_2, y=0.99)
+    fig.suptitle("Median M across land cells: two footings against one reference",
+                 fontsize=11, color=INK_2, y=0.99)
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     dst = PLOT_DIR / "fig_12_paired_bars.png"
     fig.savefig(dst, dpi=200)

@@ -219,21 +219,85 @@ def main():
         "Comparing a future projection against observed history would be neither of "
         "these: that is a trend comparison, and the two are not supposed to agree.")
 
+    doc.add_paragraph(
+        "Figure 1a plots the random forest's FPI against the observed DCCEEW FPI. "
+        "The x axis is the observed value for one 1 km cell in one year, the y "
+        "axis the forest's prediction for that same cell and year, and each "
+        "hexagon counts how many cell-years fall in it — 60,000 cells drawn at "
+        "random within each of the 30 years, 1.8 million points in total. It is "
+        "NOT a comparison of 30-year averages; that is Figure 2. The dashed line "
+        "is 1:1, so a point above it means the forest predicted more "
+        "productivity than was observed. The statistics printed on the panel are "
+        "in sample, meaning these 30 years are the years the forest was trained "
+        "on, so the figure shows how faithfully it reproduces its own training "
+        "data.")
+    doc.add_paragraph(
+        "How it is computed: for each year, the saved forest predicts FPI at "
+        "every land cell; 60,000 of those cells are drawn at random and paired "
+        "with the observed value at the same cell and year; the 30 years are "
+        "pooled and binned into hexagons, each shaded by how many pairs it "
+        "holds. The accompanying statistics over all 6,956,407 cells and 30 "
+        "years are R² %.3f, RMSE %.2f FPI units, MAE %.2f and bias %+.3f — the "
+        "bias being the mean of (modelled - observed), so a value this close to "
+        "zero says the forest is not systematically high or low. They are "
+        "printed here rather than on the figure so that the figure stays "
+        "readable."
+        % (ins["r2"], ins["rmse"], ins["mae"], ins["bias"]))
+    doc.add_paragraph(
+        "How to read it: the band should hug the dashed 1:1 line. It does so "
+        "tightly below about FPI 4, which is most of the continent, and fans out "
+        "above it, where fewer cells and larger values make each prediction "
+        "harder. Points above the line are years and places where the forest "
+        "predicted more productivity than was observed.")
     figure(doc, "fig_01a_modelled_vs_observed.png",
-           "Figure 1a. Modelled against observed FPI over all 30 historical "
-           "years, 60,000 cells drawn per year, hexbin density on linear axes. "
-           "The statistics in the panel are the pooled in-sample figures for the "
-           "same 30 years, so the caption and the cloud describe one sample. "
-           "(An earlier version plotted five hand-picked years beneath the "
-           "30-year statistics.)")
+           "Figure 1a. Random forest FPI against observed DCCEEW FPI, all 30 "
+           "years, linear axes and linear hexbin density.")
+    doc.add_paragraph(
+        "Figure 1b splits that by year and adds the number that matters. The "
+        "blue line is the same in-sample fit, one R² per year. The orange line "
+        "is the out-of-fold result: for each year, the prediction comes from a "
+        "forest trained on the other 24 years, so that year was unseen. The "
+        "vertical gap between the lines is the cost of predicting a year the "
+        "model has not met, which is exactly what the projection to 2035-2099 "
+        "asks of it. The orange line is therefore the accuracy to quote, and it "
+        "is the lower one.")
+    doc.add_paragraph(
+        "How it is computed: the blue point for a year is the R² of the saved "
+        "forest's prediction against the observed layer for that year, over the "
+        "full grid. The orange point comes from the year-group cross-validation "
+        "already run in Random_forest_CSIRO/Step_03, where the 30 years are "
+        "split into five folds of six years; each year is predicted by the "
+        "forest fitted to the other 24. Pooled, blue gives R² %.3f and orange "
+        "%.3f, and no year departs from its line by enough to change that "
+        "reading."
+        % (ins["r2"], oof["r2"]))
+    figure(doc, "fig_01b_accuracy_by_year.png",
+           "Figure 1b. Accuracy year by year, in sample against out of fold.")
     figure(doc, "fig_01b_accuracy_by_year.png",
            "Figure 1b. Accuracy year by year. The gap between the two lines is "
            "the cost of predicting an unseen year.")
+    doc.add_paragraph(
+        "Figure 2 is the same comparison in space rather than in points. Panel "
+        "(a) averages the 30 observed annual FPI layers, panel (b) averages the "
+        "30 modelled ones, and both use one colour scale so they can be read "
+        "against each other directly. Panel (c) subtracts one from the other: "
+        "red means the forest sits above the observation at that cell, blue "
+        "below, and the scale is symmetric about zero so the two directions "
+        "cannot be confused. What to look for is whether the residual has "
+        "structure. It does not: the difference is fine-grained and scattered "
+        "along the forested east, south-west and Tasmania rather than forming "
+        "large regions of one sign, which is what a systematic failure would "
+        "look like.")
+    doc.add_paragraph(
+        "How it is computed: panel (a) is the cell-wise mean of the 30 observed "
+        "annual FPI rasters, panel (b) the cell-wise mean of the 30 modelled "
+        "ones, and panel (c) is (b) minus (a). Panels (a) and (b) share one "
+        "colour scale so they can be compared directly; panel (c) uses a "
+        "diverging scale centred on zero, symmetric so that equal errors in "
+        "either direction look equally large.")
     figure(doc, "fig_02_hist_fpi_maps.png",
-           "Figure 2. The 30-year mean FPI, observed (a) and modelled (b), and "
-           "their difference (c). The pattern and the level both carry; residuals "
-           "are fine-grained and concentrated along the forested east and "
-           "south-west, not structured at continental scale.")
+           "Figure 2. Mean FPI 1985-2014: observed (a), modelled (b), and their "
+           "difference (c).")
 
     # -------------------------------------------------------- denominator ---
     doc.add_heading("What the modelled denominator changes", level=1)
@@ -265,11 +329,6 @@ def main():
                       "mean", "median"], widths=[1.7, 1.4, 1.5, 0.7, 0.7])
     doc.add_paragraph("Units t DM ha⁻¹, over the 6,956,407 cells of the NLUM mask.")
 
-    figure(doc, "fig_03_denominator.png",
-           "Figure 3. The denominator swap (a, b) against the averaging order (c). "
-           "The swap is centred on 1 and narrow; the averaging order is one-sided "
-           "and about three per cent, because Jensen's inequality only ever runs "
-           "one way.")
 
     # ------------------------------------------------------------- mprime ---
     doc.add_heading("Effect on future M'", level=1)
@@ -313,6 +372,26 @@ def main():
         "mismatch described above, and two of its eight windows come out positive."
         % (method.max(), method.min(), other.max(), other.min()))
 
+    doc.add_paragraph(
+        "Figure 4 compares New_M_2019 — the revised maximum biomass layer of "
+        "Roxburgh et al. (2019), which is the historical maxAbgM input FullCAM "
+        "reads — against the future M' this work produces. Each bar is the "
+        "median over the NLUM mask of 100 x (M' - New_M_2019) / New_M_2019 for "
+        "one scenario and one 30-year window, so a bar at -10 means the typical "
+        "cell carries ten per cent less potential biomass than the layer FullCAM "
+        "uses today. The two colours are two different historical denominators: "
+        "blue divides by Eq. (1) of the FPI downloaded from DCCEEW, orange by "
+        "Eq. (1) of the FPI the random forest models for the same 30 years. "
+        "Orange is what this work uses, because then the historical and the "
+        "future FPI come from one model and its bias cancels out of the ratio.")
+    doc.add_paragraph(
+        "Figure 4a is the method: the 30 annual FPI are averaged first and "
+        "Eq. (1) is applied to that mean, on both sides. The two colours nearly "
+        "coincide, which is the expected result — the denominator swap is worth "
+        "less than a per cent — and it doubles as a check on the arithmetic. "
+        "Figure 4b repeats it with Eq. (1) applied per year and the results "
+        "averaged; the bars deepen by about one percentage point throughout, "
+        "which is the Jensen gap of Figure 3c arriving in the answer.")
     figure(doc, "fig_04a_mprime_change_method.png",
            "Figure 4a. The step FullCAM sees, on the method. Blue is the "
            "observed historical FPI (the DCCEEW download), orange the modelled "
@@ -323,10 +402,22 @@ def main():
     figure(doc, "fig_04b_mprime_change_sensitivity.png",
            "Figure 4b. The same on the per-year sensitivity, where the two "
            "positive bars of the observed-denominator route turn negative.")
+    doc.add_paragraph(
+        "Figure 5 is the same quantity as Figure 4, cell by cell instead of "
+        "summarised to a median: 100 x (M' - New_M_2019) / New_M_2019 for each "
+        "of the eight scenario-windows, on one diverging scale centred on zero, "
+        "so blue is a loss of potential biomass against today's layer and red a "
+        "gain. The rows are the two windows and the columns the four scenarios, "
+        "which makes the two readings easy to separate: down a column is the "
+        "passage of time under one scenario, across a row is the choice of "
+        "scenario at one time. Losses dominate the forested east, the south-west "
+        "and Tasmania. The red patches are arid interior cells where M' is only "
+        "a few tonnes per hectare, so a large percentage is a small absolute "
+        "change — which is why Figure 4 quotes medians and the comparison "
+        "section also reports totals in Mt DM.")
     figure(doc, "fig_05_mprime_change_maps.png",
-           "Figure 5. Where the projected change sits. Declines dominate the "
-           "forested east, south-west and Tasmania; the increases are in arid "
-           "interior cells whose M' is small in absolute terms.")
+           "Figure 5. Projected change in M' against New_M_2019, per cell, for "
+           "each scenario and window.")
 
     # ------------------------------------------------------------- checks ---
     doc.add_heading("Checks", level=1)
