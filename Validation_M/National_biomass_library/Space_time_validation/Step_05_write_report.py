@@ -288,9 +288,11 @@ def main():
            "cannot explain and which needs investigating before the "
            "space-for-time result is used."))
     figure(doc, "fig_02_present_day_gate.png",
-           "Figure 2. The present-day gate. Left: observed against M' at the "
-           "same cell, linear axes clipped just above the bulk of the data, 1:1 "
-           "dashed. Right: the distribution of the ratio.")
+           "Figure 2. The present-day gate. Left: observed AGB against M' at "
+           "the same cell, linear axes clipped just above the bulk of the data, "
+           "1:1 dashed, with n, median ratio, Spearman rho, the share within a "
+           "factor of two and RMSE on the panel. Right: the distribution of the "
+           "ratio, cut at 6 with the number of sites beyond it stated.")
 
     if "same_cell_eq1_footing" in found.index:
         eq1 = found.loc["same_cell_eq1_footing"]
@@ -355,14 +357,19 @@ def main():
            "the matching adds nothing there and the result should not be "
            "quoted as skill."))
     figure(doc, "fig_04_obs_vs_matched.png",
-           "Figure 4. Observed biomass against the M' projected for each site's "
-           "future climate analogue, one panel per scenario-window.")
+           "Figure 4. Observed AGB against the M' projected for each site's "
+           "future climate analogue, one panel per scenario-window. Each panel "
+           "carries n, the median ratio, Spearman rho and the share within a "
+           "factor of two for that run; the same numbers, with the rest of the "
+           "statistics, are in the tables above.")
     figure(doc, "fig_05_ratio_by_run.png",
            "Figure 5. Median ratio with its bootstrap interval, controls in "
            "grey. This is the summary figure of the whole analysis.")
     figure(doc, "fig_06_displacement.png",
            "Figure 6. Where the analogues are, and whether a more distant "
-           "analogue agrees less well.")
+           "analogue agrees less well. Panel (b) carries the Spearman "
+           "correlation between the distance to the analogue and the ratio, "
+           "which is the question it asks.")
 
     unc_path = OUT_DIR / ("metrics_by_run%s.csv" % unconstrained_suffix)
     if "_nvis" in args.suffix and unc_path.exists():
