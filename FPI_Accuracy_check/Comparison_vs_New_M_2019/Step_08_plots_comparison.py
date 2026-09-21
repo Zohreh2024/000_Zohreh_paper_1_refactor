@@ -51,7 +51,15 @@ ROOT = PARENT.parent
 OUT_DIR = HERE / "output"
 CV_DIR = OUT_DIR / "cv"
 PLOT_DIR = HERE / "plots"
-MPRIME_DIR = PARENT / "output_Mprime_rf" / "mean_of_annual"
+MPRIME_ANNUAL = PARENT / "output_Mprime_rf" / "mean_of_annual"
+MPRIME_OFMEAN = PARENT / "output_Mprime_rf" / "eq1_of_mean"
+ORDER = "eq1_of_mean"        # the method; --order mean_of_annual is the sensitivity
+
+
+def window_mean_path(ssp, win):
+    if ORDER == "eq1_of_mean":
+        return MPRIME_OFMEAN / ("maxAbgMF_from_mean_fpi_%s_%s.tif" % (ssp, win))
+    return MPRIME_ANNUAL / ("maxAbgMF_%s_%s_mean.tif" % (ssp, win))
 NEW_M = ROOT / "Data" / "Processed" / "maxAbgM_v2" / "New_M_2019_NLUM.tif"
 NLUM_MASK = ROOT / "Data" / "NLUM_Mask" / "NLUM_2010-11_mask.tif"
 
@@ -254,7 +262,9 @@ def fig_cv_scenarios():
 # --------------------------------------------------------------------------- #
 
 def fig_scatter():
-    df = pd.read_csv(OUT_DIR / "comparison_vs_New_M_2019.csv")
+    df = pd.read_csv(OUT_DIR / ("comparison_vs_New_M_2019%s.csv"
+                                % ("" if ORDER == "eq1_of_mean"
+                                   else "_mean_of_annual")))
     df = df[df["ssp"] != "New_M_2019"].set_index(["ssp", "window"])
     base, _ = read(NEW_M, 2)
     m = mask(2)
@@ -267,12 +277,12 @@ def fig_scatter():
     for r, win in enumerate(WINDOWS):
         for c, ssp in enumerate(SSPS):
             ax = axes[r, c]
-            a, _ = read(MPRIME_DIR / ("maxAbgMF_%s_%s_mean.tif" % (ssp, win)), 2)
+            a, _ = read(window_mean_path(ssp, win), 2)
             a = np.where(m, a, np.nan)
             ok = np.isfinite(a) & np.isfinite(base)
             idx = rng.choice(int(ok.sum()), min(400_000, int(ok.sum())), replace=False)
             x, y = base[ok][idx], a[ok][idx]
-            ax.hexbin(x, y, gridsize=70, bins="log", cmap=SEQ_BLUE, mincnt=1,
+            ax.hexbin(x, y, gridsize=70, cmap=SEQ_BLUE, mincnt=1,
                       extent=(0, hi, 0, hi), linewidths=0)
             ax.plot([0, hi], [0, hi], color=INK_MUTED, lw=1.2, ls="--")
             ax.set_xlim(0, hi)
@@ -306,7 +316,9 @@ def fig_scatter():
 # --------------------------------------------------------------------------- #
 
 def fig_totals():
-    df = pd.read_csv(OUT_DIR / "comparison_vs_New_M_2019.csv")
+    df = pd.read_csv(OUT_DIR / ("comparison_vs_New_M_2019%s.csv"
+                                % ("" if ORDER == "eq1_of_mean"
+                                   else "_mean_of_annual")))
     ref = df[df["ssp"] == "New_M_2019"]["total_Mt_DM"].iloc[0]
     d = df[df["ssp"] != "New_M_2019"].copy()
 
@@ -361,7 +373,9 @@ def fig_totals():
 # --------------------------------------------------------------------------- #
 
 def fig_decile():
-    d = pd.read_csv(OUT_DIR / "change_by_baseline_decile.csv")
+    d = pd.read_csv(OUT_DIR / ("change_by_baseline_decile%s.csv"
+                               % ("" if ORDER == "eq1_of_mean"
+                                  else "_mean_of_annual")))
 
     fig, axes = plt.subplots(1, 2, figsize=(12.2, 4.6), sharey=True)
     for ax, win in zip(axes, WINDOWS):
@@ -394,7 +408,11 @@ def fig_decile():
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--only", nargs="*", default=None)
+    ap.add_argument("--order", choices=["eq1_of_mean", "mean_of_annual"],
+                    default="eq1_of_mean")
     args = ap.parse_args()
+    global ORDER
+    ORDER = args.order
 
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
     jobs = {"6": fig_cv_interannual, "7": fig_cv_change, "8": fig_cv_scenarios,

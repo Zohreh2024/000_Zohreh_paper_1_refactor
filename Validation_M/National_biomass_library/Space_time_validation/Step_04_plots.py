@@ -14,8 +14,10 @@ Recomputes no metric; every number comes from Step_03's CSVs.
 
 Colour: magnitude on a one-hue blue ramp, anything centred on a meaningful value
 (a ratio against 1) on a diverging blue/red pair with a neutral grey midpoint.
-Biomass axes are logarithmic - the library spans three orders of magnitude, and
-on a linear axis the top 1% of sites would be the only visible part of it.
+All axes are linear. Biomass spans three orders of magnitude, so axis limits are
+set just above the bulk of the data (a high percentile) and the handful of sites
+beyond are clipped - the shape of the data is shown as it is, rather than
+straightened by a transform.
 
 Run
 ---
@@ -90,11 +92,22 @@ def tidy(ax, grid_axis=None):
     return ax
 
 
-def loglog(ax, lo=1.0, hi=2000.0):
-    ax.set_xscale("log")
-    ax.set_yscale("log")
+def square(ax, lo=0.0, hi=1200.0):
+    """Linear axes, equal on both, with the 1:1 line.
+
+    Biomass spans three orders of magnitude, so the low end is dense and the
+    few very large sites sit alone in the corner. That is what the data looks
+    like; the axis limit is set just above the bulk (see `hi`) so the dense
+    part stays readable, and sites beyond it are clipped rather than hidden
+    behind a transform.
+    """
     ax.set_xlim(lo, hi)
     ax.set_ylim(lo, hi)
+    # Few, round ticks: with eight panels side by side the default locator puts
+    # a label at each panel edge and neighbouring labels run into one another.
+    ticks = [t for t in (0, 400, 800, 1200, 1600, 2000) if lo <= t <= hi]
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
     ax.plot([lo, hi], [lo, hi], color=INK_MUTED, lw=1.2, ls="--", zorder=1)
     return ax
 
@@ -126,12 +139,11 @@ def fig_sites(ref):
     ax1.set_aspect(1 / np.cos(np.deg2rad(30)))
     tidy(ax1)
 
-    bins = np.logspace(0, np.log10(max(ref["agb"].max(), 10)), 40)
+    bins = np.linspace(0, float(np.nanpercentile(ref["agb"], 99)), 40)
     for mat, c in [("verified mature", C_MATURE), ("likely mature", C_LIKELY)]:
         d = ref[ref["maturity"] == mat]
         if not d.empty:
             ax2.hist(d["agb"], bins=bins, color=c, alpha=0.7, label=mat)
-    ax2.set_xscale("log")
     ax2.set_xlabel("observed above-ground biomass (Mg ha$^{-1}$)")
     ax2.set_ylabel("sites")
     ax2.set_title("b  What they carry\nmedian %.0f Mg ha$^{-1}$"
@@ -156,7 +168,7 @@ def fig_gate(matches, runs):
         s = d[d["maturity"] == mat]
         ax1.scatter(s["agb"], s["M_matched"], s=16, color=c, alpha=0.5,
                     lw=0.3, edgecolor="white", label=mat)
-    loglog(ax1)
+    square(ax1)
     ax1.set_xlabel("observed AGB (Mg ha$^{-1}$)")
     ax1.set_ylabel("M' at the same cell, today (t DM ha$^{-1}$)")
     ax1.set_title("a  The present-day gate\nmedian ratio %.2f, Spearman "
@@ -167,10 +179,10 @@ def fig_gate(matches, runs):
     tidy(ax1)
 
     ratio = (d["M_matched"] / d["agb"]).replace([np.inf, -np.inf], np.nan).dropna()
-    ax2.hist(ratio, bins=np.logspace(-1.5, 2.5, 50), color=C_FUT, alpha=0.85)
+    ax2.hist(ratio, bins=np.linspace(0, float(np.nanpercentile(ratio, 98)), 50),
+             color=C_FUT, alpha=0.85)
     ax2.axvline(1, color=INK_MUTED, lw=1.4, ls="--")
     ax2.axvline(float(np.median(ratio)), color=C_LIKELY, lw=1.8)
-    ax2.set_xscale("log")
     ax2.set_xlabel("M' $\\div$ observed AGB")
     ax2.set_ylabel("sites")
     ax2.set_title("b  M' is a maximum, so a ratio above 1 is expected\n"
@@ -244,7 +256,7 @@ def fig_obs_vs_matched(matches, runs):
                 s = d[d["maturity"] == mat]
                 ax.scatter(s["agb"], s["M_matched"], s=13, color=c, alpha=0.45,
                            lw=0.25, edgecolor="white", label=mat)
-            loglog(ax)
+            square(ax)
             row = r.loc[run] if run in r.index else None
             if row is not None:
                 ax.text(0.04, 0.95,
@@ -254,7 +266,7 @@ def fig_obs_vs_matched(matches, runs):
                         color=INK_2, linespacing=1.35)
             ax.set_title("%s %s" % (ssp.replace("ssp", "SSP"), win), loc="left")
             tidy(ax)
-    axes[0, 0].legend(fontsize=8.5, loc="lower right")
+    axes[0, 0].legend(fontsize=8.5, loc="upper right", markerscale=1.8)
     for ax in axes[1]:
         ax.set_xlabel("observed AGB (Mg ha$^{-1}$)")
     for ax in axes[:, 0]:
@@ -326,8 +338,8 @@ def fig_displacement(matches, run="ssp585_2070-2099"):
     sc = ax2.scatter(d["displacement_km"], d["M_matched"] / d["agb"],
                      c=d["match_distance"], cmap=SEQ_BLUE, s=18, lw=0.2,
                      edgecolor="white")
-    ax2.set_yscale("log")
     ax2.axhline(1, color=INK_MUTED, lw=1.2, ls="--")
+    ax2.set_ylim(0, float(np.nanpercentile(d["M_matched"] / d["agb"], 98)))
     ax2.set_xlabel("distance to the analogue (km)")
     ax2.set_ylabel("M' $\\div$ observed AGB")
     ax2.set_title("b  Does a more distant analogue agree less?", loc="left")

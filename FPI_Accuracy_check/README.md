@@ -92,11 +92,20 @@ since the denominator is a per-cell constant:
 
 | pairing | M′ vs Option B (median) | what changed |
 |---|---|---|
-| `eq1_of_mean` | ×0.9908 | denominator modelled instead of downloaded |
-| `mean_of_annual` | ×0.9441 | that, **and** the averaging order corrected |
+| **`eq1_of_mean` — the method** | ×0.9908 | denominator modelled instead of downloaded |
+| `mean_of_annual` — sensitivity | ×0.9441 | that, **and** the averaging order corrected |
 
-The projected change FullCAM sees at the boundary, against `New_M_2019`, is now
-**−2.6% to −22.8%** across the eight scenario-windows, negative in all of them.
+**The method is `eq1_of_mean`:** predict each year's FPI, average the FPI over
+the period, then apply Eq. (1) to that mean — on both sides of the ratio. That
+is the quantity Eq. (1) is defined on: Roxburgh et al. (2019) Sec. 2 p. 265 give
+Eq. (1) as "the predicted maximum AGB for a given FPI", with FPI "potential site
+productivity for any given location" and M "constant for any location in
+Australia". `Calculation_future_M_CSIRO/Step_06` says the same in the repo's own
+words. The per-year order is reported throughout as a sensitivity.
+
+The projected change FullCAM sees at the boundary, against `New_M_2019`, is
+**−2.6% to −21.2%** on the method across the eight scenario-windows (−3.2% to
+−22.8% on the per-year sensitivity), negative in all of them.
 Option B's `eq1_of_mean`-denominator numbers ran −18.6% to **+1.13%**, i.e. two
 windows came out positive; those sign flips were the Jensen mismatch, not a
 climate signal, and pairing by averaging order removes them.

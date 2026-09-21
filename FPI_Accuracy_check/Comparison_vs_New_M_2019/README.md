@@ -1,14 +1,24 @@
 # Comparison_vs_New_M_2019/
 
 Future M′ — built with every component from the random forest — against
-`New_M_2019`, the layer FullCAM ships as its historical maxAbgM. Variability
-first, then the ordinary comparison metrics, one metric per figure.
+`New_M_2019`, the layer FullCAM ships as its historical maxAbgM.
+
+**Averaging order: `eq1_of_mean`, the method.** Each year's FPI is predicted, the
+window mean of FPI is taken, and Eq. (1) is applied to that mean — which is the
+quantity Eq. (1) is defined on (Roxburgh et al. 2019, Sec. 2, p. 265). The
+per-year order is available as `--order mean_of_annual` and its tables carry a
+`_mean_of_annual` suffix. The interannual CV is identical either way: each
+order's annual M′ is a per-cell constant times the same `Eq1(FPI_y)` series, and
+sd/mean is invariant to that constant.
+
+Variability first, then the ordinary comparison metrics, one metric per figure.
 
 Everything here reads from the parent folder and writes only inside this one:
 
 ```
 inputs   ../output/fpi_rf_<year>.tif                              30 modelled historical years
-         ../output_Mprime_rf/mean_of_annual/maxAbgMF_*.tif        240 annual + 8 window means
+         ../output_Mprime_rf/eq1_of_mean/maxAbgMF_from_mean_fpi_*.tif   8 window means (the method)
+         ../output_Mprime_rf/mean_of_annual/maxAbgMF_*.tif        240 annual (for the interannual CV)
          ../output_Mprime_rf/mean_of_annual/scale_Eq1_to_original2004.tif
          Step_02_published_lambda/output/lambda_published.tif
          Data/Processed/maxAbgM_v2/New_M_2019_NLUM.tif
@@ -57,7 +67,7 @@ assuming it.
 | `fig_09_scatter_vs_New_M_2019.png` | M′ against the reference cell by cell, with r, slope, bias, RMSE |
 | `fig_10_totals.png` | area-weighted national total biomass, Mt DM, and its change |
 | `fig_11_change_by_decile.png` | median change by decile of `New_M_2019` — where in the distribution the loss falls |
-| `fig_13_rf_mprime_bars.png` | **the headline bar chart**: median M′ per scenario-window, every component from the random forest, against the hatched 1985–2014 baseline and the `New_M_2019` reference line (`Step_09_paired_bars.py --mode rf_only`) |
+| `fig_13_rf_mprime_bars.png` | **the headline bar chart**: median M′ per scenario-window (19.50, 17.62, 19.19, 20.09 mid-century; 16.96, 19.20, 15.42, 15.53 late), every component from the random forest, against the hatched 1985–2014 baseline of 20.43 and the `New_M_2019` reference line (`Step_09_paired_bars.py --mode rf_only`) |
 | `fig_12_paired_bars.png` | the same layout with Eq. (1) M beside it, so the footing gap and the climate signal sit on one axis (`--mode footings`) |
 
 Percentages inside the bars of `fig_13` are the shift in the **median**
@@ -101,26 +111,26 @@ everywhere.) Read that with care: the QDC change factors are applied to
 rescaled, not model weather (see the repo's `CLAUDE.md`), and the method cannot
 generate new variability of its own.
 
-**Scenario choice matters far less than the year.** Across-scenario CV is 5.9%
-mid-century and 12.4% late-century, against ~45% interannual. The scenarios
+**Scenario choice matters far less than the year.** Across-scenario CV is 6.1%
+mid-century and 12.7% late-century, against ~45% interannual. The scenarios
 separate late, as they should, but even then the year-to-year spread within one
 scenario is three to four times larger.
 
 **Cell by cell, M′ tracks the reference closely and sits just below it.**
-Pearson r 0.984–0.998, OLS slope 0.999–1.057, bias −0.4 to −5.2 t DM ha⁻¹,
-RMSE 5.8–16.2. The share of cells that decline rises from 67% (SSP126
-2035–2064) to 91% (SSP585 2070–2099).
+Pearson r 0.983–0.997, OLS slope 0.998–1.057, bias −0.05 to −5.0 t DM ha⁻¹,
+RMSE 5.9–16.2. The share of cells that decline rises from 64% (SSP126
+2035–2064) to 88% (SSP585 2070–2099).
 
 **National total**, area-weighted, against 34,363 Mt DM for `New_M_2019`:
-−2.5% to −4.8% by mid-century, −1.1% (SSP245) to −11.9% (SSP585) late. The
-totals fall less than the per-cell medians (−3.2% to −22.8%) because the deepest
+−2.2% to −4.5% by mid-century, −0.5% (SSP245) to −11.4% (SSP585) late. The
+totals fall less than the per-cell medians (−2.6% to −21.2%) because the deepest
 relative losses are in low- and mid-biomass cells, which carry little of the
 total — `fig_11`.
 
 **Where the loss falls.** Relative loss peaks in deciles 2–5 of `New_M_2019`
-(−32% under SSP585 2070–2099) and is shallowest in the top decile (−6%). In
-absolute tonnes the picture inverts, since the top decile holds most of the
-biomass; report whichever one the audience needs, and say which it is.
+(−31.6% in decile 4 under SSP585 2070–2099) and is shallowest in the top decile
+(−6.0%). In absolute tonnes the picture inverts, since the top decile holds most
+of the biomass; report whichever one the audience needs, and say which it is.
 
 ## Two things to keep in mind when quoting these
 
@@ -136,3 +146,11 @@ south by several per cent. `cell_area_ha()` in Step_07 does the weighting, and
 the totals are in Mt DM over the whole NLUM mask — a carrying-capacity figure,
 not an inventory estimate, since M′ is what a site could carry rather than what
 stands on it.
+
+## Axes
+
+Every figure uses **linear** axes and linear hexbin density — no log scales
+anywhere. Where a quantity spans orders of magnitude (biomass, the M′/AGB
+ratio) the axis limit is set just above the bulk of the data and the few points
+beyond are clipped, so the shape of the distribution is shown as it is rather
+than straightened by a transform.

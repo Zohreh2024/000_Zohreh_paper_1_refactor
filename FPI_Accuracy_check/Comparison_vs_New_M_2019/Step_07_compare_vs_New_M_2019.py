@@ -32,7 +32,21 @@ Everything else is the ordinary comparison: bias, RMSE, MAE, Pearson r, the
 share of cells declining, and the area-weighted national total in Mt DM, which
 is the number that actually matters for a carbon account.
 
-Reads   ../output_Mprime_rf/mean_of_annual/maxAbgMF_<ssp>_<year>.tif  240
+Which averaging order
+---------------------
+The method is `--order eq1_of_mean` (the default): predict each year's FPI,
+average the FPI over the window, then apply Eq. (1) to that mean. Step_06 of
+Calculation_future_M_CSIRO names this the layer to use "when feeding a single
+period value to FullCAM". `--order mean_of_annual` is the sensitivity, and its
+tables are written with a `_mean_of_annual` suffix.
+
+The interannual CV is identical either way and is computed once from the annual
+stack: each order's annual M' is a per-cell constant times the same Eq1(FPI_y)
+series, and sd/mean is invariant to that constant. Only the window mean, and so
+only the comparison against New_M_2019, depends on the order.
+
+Reads   ../output_Mprime_rf/eq1_of_mean/maxAbgMF_from_mean_fpi_<ssp>_<win>.tif  8
+        ../output_Mprime_rf/mean_of_annual/maxAbgMF_<ssp>_<year>.tif  240
         ../output/fpi_rf_<year>.tif                                    30
         ../output_Mprime_rf/mean_of_annual/scale_Eq1_to_original2004.tif
         Step_02_published_lambda/output/lambda_published.tif
@@ -42,7 +56,7 @@ Writes  output/cv/cv_interannual_<ssp>_<window>.tif                    8
         output/cv/cv_interannual_historical_1985-2014.tif
         output/cv/cv_across_scenarios_<window>.tif                     2
         output/cv/mean_Mprime_historical_1985-2014.tif
-        output/comparison_vs_New_M_2019.csv        per scenario-window metrics
+        output/comparison_vs_New_M_2019[_mean_of_annual].csv   per window
         output/cv_summary.csv                      CV distributions
         output/change_by_baseline_decile.csv       where the change concentrates
 
@@ -73,8 +87,15 @@ ROOT = PARENT.parent                              # the repository root
 OUT_DIR = HERE / "output"
 CV_DIR = OUT_DIR / "cv"
 FPI_RF_DIR = PARENT / "output"                    # Step_01's modelled historical FPI
-MPRIME_DIR = PARENT / "output_Mprime_rf" / "mean_of_annual"
-SCALE = MPRIME_DIR / "scale_Eq1_to_original2004.tif"
+# The two averaging orders of the same fully-modelled M'. `eq1_of_mean` is the
+# method: each year's FPI is predicted, the window mean of FPI is taken, and
+# Eq. (1) is applied to that mean - which is what Calculation_future_M_CSIRO/
+# Step_06 says to use "when feeding a single period value to FullCAM".
+# `mean_of_annual` applies Eq. (1) to each year first and averages the result;
+# it is kept as the sensitivity.
+MPRIME_ANNUAL = PARENT / "output_Mprime_rf" / "mean_of_annual"
+MPRIME_OFMEAN = PARENT / "output_Mprime_rf" / "eq1_of_mean"
+SCALE = MPRIME_ANNUAL / "scale_Eq1_to_original2004.tif"
 LAMBDA = ROOT / "Step_02_published_lambda" / "output" / "lambda_published.tif"
 NEW_M = ROOT / "Data" / "Processed" / "maxAbgM_v2" / "New_M_2019_NLUM.tif"
 NLUM_MASK = ROOT / "Data" / "NLUM_Mask" / "NLUM_2010-11_mask.tif"
@@ -200,6 +221,10 @@ def dist(arr, valid):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--order", choices=["eq1_of_mean", "mean_of_annual"],
+                    default="eq1_of_mean",
+                    help="which averaging order of M' to compare. Default is "
+                         "the method: Eq.(1) of the mean FPI")
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--overwrite", action="store_true")
     args = ap.parse_args()
@@ -248,15 +273,25 @@ def main():
 
     for win, years in WINDOWS.items():
         for ssp in SSPS:
-            paths = [MPRIME_DIR / ("maxAbgMF_%s_%d.tif" % (ssp, y)) for y in years]
+            paths = [MPRIME_ANNUAL / ("maxAbgMF_%s_%d.tif" % (ssp, y))
+                     for y in years]
             paths = [p for p in paths if p.exists()]
             if len(paths) != len(list(years)):
                 print("  %s %s: %d of %d annual rasters found"
                       % (ssp, win, len(paths), len(list(years))))
             cv_path = CV_DIR / ("cv_interannual_%s_%s.tif" % (ssp, win))
 
-            mean, sd, n = stack_stats(paths, args.jobs)
-            cv = cv_of(mean, sd, valid)
+            # The annual stack gives the interannual CV. That CV is the same
+            # for both orders: each order's annual M' is a per-cell CONSTANT
+            # times the same Eq1(FPI_y) series, and sd/mean is scale-invariant.
+            # Only the window mean depends on the order.
+            mean_annual, sd, n = stack_stats(paths, args.jobs)
+            cv = cv_of(mean_annual, sd, valid)
+            if args.order == "eq1_of_mean":
+                mean = read(MPRIME_OFMEAN / ("maxAbgMF_from_mean_fpi_%s_%s.tif"
+                                             % (ssp, win)))
+            else:
+                mean = mean_annual
             if args.overwrite or not cv_path.exists():
                 write_gtiff(cv, cv_path, "cv_interannual_%s_%s" % (ssp, win),
                             dict(units="%", long_name="interannual CV of M'",
@@ -313,7 +348,9 @@ def main():
                      total_Mt_DM_New_M_2019=float(np.nansum((base * tot_factor)[valid])),
                      total_pct_change=0.0))
 
-    pd.DataFrame(rows).to_csv(OUT_DIR / "comparison_vs_New_M_2019.csv", index=False)
+    tag = "" if args.order == "eq1_of_mean" else "_mean_of_annual"
+    pd.DataFrame(rows).to_csv(
+        OUT_DIR / ("comparison_vs_New_M_2019%s.csv" % tag), index=False)
     pd.DataFrame(cv_rows).to_csv(OUT_DIR / "cv_summary.csv", index=False)
 
     # --- where the change concentrates ------------------------------------- #
@@ -336,7 +373,8 @@ def main():
                                  pct_change_p25=float(np.percentile(pct[sel], 25)),
                                  pct_change_p75=float(np.percentile(pct[sel], 75)),
                                  n=int(sel.sum())))
-    pd.DataFrame(dec_rows).to_csv(OUT_DIR / "change_by_baseline_decile.csv", index=False)
+    pd.DataFrame(dec_rows).to_csv(
+        OUT_DIR / ("change_by_baseline_decile%s.csv" % tag), index=False)
 
     print("\ntables in %s\nCV rasters in %s" % (OUT_DIR, CV_DIR))
 

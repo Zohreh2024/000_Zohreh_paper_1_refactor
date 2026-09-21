@@ -126,6 +126,69 @@ def main():
         "delta is CSIRO-minus-CSIRO and never CSIRO-minus-ANUClimate. FPI was the "
         "one input where it had not been applied.")
     doc.add_paragraph(
+        "The averaging order is fixed and stated once here, because the two "
+        "possible orders are easy to confuse. THE METHOD IS: predict each year's "
+        "FPI with the random forest, average the FPI over the period, then apply "
+        "Eq. (1) to that mean — on both sides of the ratio. Calculation_future_M_"
+        "CSIRO/Step_06 names this the layer to use \"when feeding a single period "
+        "value to FullCAM\". Applying Eq. (1) to each year and averaging the "
+        "results afterwards is a different number, because Eq. (1) is convex; it "
+        "is reported throughout as the sensitivity, never as the headline.",
+        style="Intense Quote")
+    doc.add_heading("What Roxburgh et al. (2019) actually specify", level=2)
+    doc.add_paragraph(
+        "Roxburgh, S.H., Karunaratne, S.B., Paul, K.I., Lucas, R.M., Armston, "
+        "J.D., Sun, J. (2019). A revised above-ground maximum biomass layer for "
+        "the Australian continent. Forest Ecology and Management 432, 264-275. "
+        "https://doi.org/10.1016/j.foreco.2018.09.011 — Section 2, p. 265, the "
+        "paragraph that introduces Eq. (1):")
+    for quote in [
+        "“… the forest growth model 3-PG … to derive a dimensionless index "
+        "(the Forest Productivity Index, or FPI) that summarises potential site "
+        "productivity for any given location based on the Normalised Difference "
+        "Vegetation Index (NDVI), soil fertility, vapour pressure deficit, soil "
+        "water content, and temperature (Kesteven and Landsberg, 2004).”",
+        "“This relationship is used to calculate the parameter M (the "
+        "predicted maximum AGB for a given FPI), and is given by "
+        "M = (6.011 × √FPI − 5.291)²”  (Eq. 1)",
+        "“Parameter M is constant for any location in Australia, and is "
+        "embedded within the FullCAM database as a spatial input layer at a "
+        "resolution of 0.0025° (or approximately 250 m).”",
+    ]:
+        q = doc.add_paragraph(quote)
+        q.paragraph_format.left_indent = Inches(0.35)
+        for run in q.runs:
+            run.italic = True
+
+    doc.add_paragraph(
+        "Three things follow, and together they settle the averaging order. FPI "
+        "is defined as a property of a LOCATION — \"potential site "
+        "productivity for any given location\" — not of a location in a "
+        "particular year. Eq. (1) is written for \"a given FPI\", one value in, "
+        "one value out. And M is \"constant for any location in Australia\", a "
+        "single static layer in the FullCAM database. Nowhere does the paper "
+        "evaluate Eq. (1) on a series of annual FPI values, because in FullCAM "
+        "no such series exists: the FPI layer Eq. (1) was calibrated against is "
+        "itself a long-term climatological index (Kesteven and Landsberg, 2004; "
+        "the empirical relationship is Richards and Brack, 2004).")
+    doc.add_paragraph(
+        "So the faithful reading is one FPI value per location entering Eq. (1) "
+        "— which, for a 30-year projection window, means the window-mean FPI. "
+        "That is the method used here. Applying Eq. (1) to each projected year "
+        "and averaging the resulting M afterwards is an extension the paper does "
+        "not describe, and because Eq. (1) is convex above its root it returns a "
+        "systematically larger number (a median factor of %.4f on this domain). "
+        "It is reported as a sensitivity for exactly that reason."
+        % comp_med("RF: mean_of_annual"))
+    doc.add_paragraph(
+        "One honest qualification: the paper does not state an averaging rule, "
+        "because it never faces the question — it had no time-varying FPI to "
+        "average. The rule above is inferred from how FPI and M are defined, not "
+        "quoted from a sentence that settles it. What can be said without "
+        "inference is that the per-year route has no support in the paper, while "
+        "the mean-FPI route matches the quantity Eq. (1) was calibrated on.")
+
+    doc.add_paragraph(
         "No retraining was involved. The saved model is loaded, its feature order "
         "is asserted against the pipeline's own definition, and it is applied to "
         "the BARRA-R2 historical climate through the same soil block, land mask and "
@@ -158,7 +221,7 @@ def main():
 
     figure(doc, "fig_01_accuracy.png",
            "Figure 1. Modelled against observed FPI (a, five representative years, "
-           "log density) and accuracy year by year (b). The gap between the two "
+           "hexbin density) and accuracy year by year (b). The gap between the two "
            "lines in (b) is the cost of predicting an unseen year.")
     figure(doc, "fig_02_hist_fpi_maps.png",
            "Figure 2. The 30-year mean FPI, observed (a) and modelled (b), and "
@@ -226,28 +289,32 @@ def main():
                 continue
             rows.append([
                 ssp.replace("ssp", "SSP"), win,
-                "%+.1f" % a["pct_change_vs_New_M_2019_median_obs"].iloc[0],
-                "%+.1f" % a["pct_change_vs_New_M_2019_median_mod"].iloc[0],
                 "%+.1f" % b["pct_change_vs_New_M_2019_median_mod"].iloc[0],
+                "%+.1f" % a["pct_change_vs_New_M_2019_median_mod"].iloc[0],
+                "%+.1f" % a["pct_change_vs_New_M_2019_median_obs"].iloc[0],
             ])
-    table(doc, rows, ["scenario", "window", "Option B (per-year num.)",
-                      "modelled, per-year", "modelled, mean-FPI"],
-          widths=[0.9, 1.0, 1.5, 1.3, 1.3])
+    table(doc, rows, ["scenario", "window", "METHOD: Eq.(1) of mean FPI",
+                      "sensitivity: per-year", "Option B (published)"],
+          widths=[0.9, 1.0, 1.6, 1.3, 1.3])
+    method = mp[mp["averaging_order"] == "eq1_of_mean"]["pct_change_vs_New_M_2019_median"]
+    other = mp[mp["averaging_order"] == "mean_of_annual"]["pct_change_vs_New_M_2019_median"]
     doc.add_paragraph(
         "Median change in M' against New_M_2019, per cent — the step FullCAM sees "
-        "from its historical maxAbgM to the future input. Option B's column pairs a "
-        "per-year numerator with a mean-FPI denominator, which is the mismatch "
-        "described above; two of its eight windows come out positive. On the "
-        "matched footing every window is negative, from %+.1f%% to %+.1f%%."
-        % (mp[mp["averaging_order"] == "mean_of_annual"]["pct_change_vs_New_M_2019_median"].max(),
-           mp[mp["averaging_order"] == "mean_of_annual"]["pct_change_vs_New_M_2019_median"].min()))
+        "from its historical maxAbgM to the future input. On the method every "
+        "window is negative, from %+.1f%% to %+.1f%%; the per-year sensitivity "
+        "gives %+.1f%% to %+.1f%%, slightly deeper throughout. Option B's column "
+        "pairs a per-year numerator with a mean-FPI denominator, which is the "
+        "mismatch described above, and two of its eight windows come out positive."
+        % (method.max(), method.min(), other.max(), other.min()))
 
     figure(doc, "fig_04_mprime_change.png",
            "Figure 4. The step FullCAM sees, by scenario and window. Blue is the "
-           "observed denominator as published in Option B, orange the modelled one. "
-           "In (a) the two positive bars turn negative; in (b), where the averaging "
-           "orders already matched, the bars barely move — which is the expected "
-           "result and a check on the arithmetic.")
+           "observed denominator as published in Option B, orange the modelled "
+           "one. Panel (a) is the method — Eq. (1) of the mean FPI — where the "
+           "averaging orders already matched on both sides and the bars barely "
+           "move, which is the expected result and a check on the arithmetic. "
+           "Panel (b) is the per-year sensitivity, where Option B's two positive "
+           "bars turn negative.")
     figure(doc, "fig_05_mprime_change_maps.png",
            "Figure 5. Where the projected change sits. Declines dominate the "
            "forested east, south-west and Tasmania; the increases are in arid "
@@ -420,8 +487,8 @@ def main():
             % (fut["pearson_r"].min(), fut["pearson_r"].max(),
                fut["pct_cells_declining"].min(), fut["pct_cells_declining"].max()))
         figure(doc, "fig_09_scatter_vs_New_M_2019.png",
-               "Figure 9. M' against New_M_2019, one hexbin per scenario-window, "
-               "log density. The dashed line is 1:1; cells below it lose biomass. "
+               "Figure 9. M' against New_M_2019, one hexbin per scenario-window. "
+               "The dashed line is 1:1; cells below it lose biomass. "
                "The cloud tightens around the line at low biomass and fans out "
                "above ~200 t DM ha⁻¹, where a few large movers set the RMSE.",
                folder=COMP_PLOTS)

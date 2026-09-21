@@ -64,12 +64,14 @@ PARENT = HERE.parent
 ROOT = PARENT.parent
 OUT_DIR = HERE / "output"
 PLOT_DIR = HERE / "plots"
-MPRIME_DIR = PARENT / "output_Mprime_rf" / "mean_of_annual"
+MPRIME_ANNUAL = PARENT / "output_Mprime_rf" / "mean_of_annual"
+MPRIME_OFMEAN = PARENT / "output_Mprime_rf" / "eq1_of_mean"
 EQ1_M_DIR = ROOT / "Calculation_future_M_CSIRO" / "output"
 HIST_EQ1 = PARENT / "output" / "Eq1_M_histRF_mean_of_annual.tif"
 NEW_M = ROOT / "Data" / "Processed" / "maxAbgM_v2" / "New_M_2019_NLUM.tif"
 NLUM_MASK = ROOT / "Data" / "NLUM_Mask" / "NLUM_2010-11_mask.tif"
 
+ORDER = "eq1_of_mean"        # the method: Eq.(1) of the window-mean FPI
 SSPS = ["ssp126", "ssp245", "ssp370", "ssp585"]
 WINDOWS = ["2035-2064", "2070-2099"]
 SSP_LABEL = {"ssp126": "SSP1-2.6", "ssp245": "SSP2-4.5",
@@ -125,7 +127,9 @@ def gather(valid, stat, force):
     for win in WINDOWS:
         for ssp in SSPS:
             eq1 = EQ1_M_DIR / ("M_%s_%s_mean.tif" % (ssp, win))
-            mp = MPRIME_DIR / ("maxAbgMF_%s_%s_mean.tif" % (ssp, win))
+            mp = (MPRIME_OFMEAN / ("maxAbgMF_from_mean_fpi_%s_%s.tif" % (ssp, win))
+                  if ORDER == "eq1_of_mean"
+                  else MPRIME_ANNUAL / ("maxAbgMF_%s_%s_mean.tif" % (ssp, win)))
             g = "%s\n%s" % (SSP_LABEL[ssp], win)
             if eq1.exists():
                 rows.append(dict(group=g, ssp=ssp, window=win,
@@ -213,8 +217,12 @@ def main():
                     default="both",
                     help="rf_only: one bar per window, the random forest's M' "
                          "(fig_13). footings: Eq.(1) M beside it (fig_12)")
+    ap.add_argument("--order", choices=["eq1_of_mean", "mean_of_annual"],
+                    default="eq1_of_mean")
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
+    global ORDER
+    ORDER = args.order
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     PLOT_DIR.mkdir(parents=True, exist_ok=True)

@@ -152,7 +152,7 @@ def figure(obs, pred, df_in, pooled_in, df_oof):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.4))
 
     hi = float(np.nanpercentile(np.concatenate([obs, pred]), 99.8))
-    ax1.hexbin(obs, pred, gridsize=90, bins="log", cmap="Blues", mincnt=1,
+    ax1.hexbin(obs, pred, gridsize=90, cmap="Blues", mincnt=1,
                extent=(0, hi, 0, hi))
     ax1.plot([0, hi], [0, hi], "k-", lw=1.4, label="1:1")
     ax1.set_xlim(0, hi)

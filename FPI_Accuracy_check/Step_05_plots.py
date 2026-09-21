@@ -145,7 +145,7 @@ def fig_accuracy(sample_years):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.4, 4.5))
 
     hi = float(np.percentile(np.concatenate([obs, mod]), 99.5))
-    ax1.hexbin(obs, mod, gridsize=80, bins="log", cmap=SEQ_BLUE, mincnt=1,
+    ax1.hexbin(obs, mod, gridsize=80, cmap=SEQ_BLUE, mincnt=1,
                extent=(0, hi, 0, hi), linewidths=0)
     ax1.plot([0, hi], [0, hi], color=INK_MUTED, lw=1.4, ls="--", zorder=3)
     ax1.text(hi * 0.80, hi * 0.72, "1:1", color=INK_MUTED, ha="left", va="top",
@@ -333,10 +333,10 @@ def fig_mprime_change(valid):
 
     fig, axes = plt.subplots(1, 2, figsize=(12.4, 4.6), sharey=True)
     titles = {
-        "mean_of_annual": "a  Per-year numerator, mean$_y$ Eq1(FPI$_y$)",
-        "eq1_of_mean": "b  Mean-FPI numerator, Eq1(mean$_y$ FPI$_y$)",
+        "eq1_of_mean": "a  THE METHOD: Eq1(mean$_y$ FPI$_y$), both sides",
+        "mean_of_annual": "b  Sensitivity: mean$_y$ Eq1(FPI$_y$), both sides",
     }
-    for ax, order in zip(axes, ["mean_of_annual", "eq1_of_mean"]):
+    for ax, order in zip(axes, ["eq1_of_mean", "mean_of_annual"]):
         d = df[df["averaging_order"] == order].sort_values(["window", "ssp"])
         x = np.arange(len(d))
         w = 0.38

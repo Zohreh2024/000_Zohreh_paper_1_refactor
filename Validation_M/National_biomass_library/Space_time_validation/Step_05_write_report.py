@@ -289,8 +289,8 @@ def main():
            "space-for-time result is used."))
     figure(doc, "fig_02_present_day_gate.png",
            "Figure 2. The present-day gate. Left: observed against M' at the "
-           "same cell, log axes, 1:1 dashed. Right: the distribution of the "
-           "ratio.")
+           "same cell, linear axes clipped just above the bulk of the data, 1:1 "
+           "dashed. Right: the distribution of the ratio.")
 
     if "same_cell_eq1_footing" in found.index:
         eq1 = found.loc["same_cell_eq1_footing"]
