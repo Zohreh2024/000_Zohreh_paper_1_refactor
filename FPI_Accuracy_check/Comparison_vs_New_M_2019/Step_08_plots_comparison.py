@@ -282,8 +282,10 @@ def fig_scatter():
             ok = np.isfinite(a) & np.isfinite(base)
             idx = rng.choice(int(ok.sum()), min(400_000, int(ok.sum())), replace=False)
             x, y = base[ok][idx], a[ok][idx]
-            ax.hexbin(x, y, gridsize=70, cmap=SEQ_BLUE, mincnt=1,
-                      extent=(0, hi, 0, hi), linewidths=0)
+            hb = ax.hexbin(x, y, gridsize=70, cmap=SEQ_BLUE, mincnt=1,
+                           extent=(0, hi, 0, hi), linewidths=0)
+            counts = hb.get_array()
+            hb.set_clim(0, float(np.percentile(counts[counts > 0], 98)))
             ax.plot([0, hi], [0, hi], color=INK_MUTED, lw=1.2, ls="--")
             ax.set_xlim(0, hi)
             ax.set_ylim(0, hi)

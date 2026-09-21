@@ -184,8 +184,18 @@ def figure(obs, pred, df_in, pooled_in, df_oof):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.4))
 
     hi = float(np.nanpercentile(np.concatenate([obs, pred]), 99.8))
-    ax1.hexbin(obs, pred, gridsize=90, cmap="Blues", mincnt=1,
-               extent=(0, hi, 0, hi))
+    # Linear colour, but clipped: a few hexagons on the 1:1 line hold orders of
+    # magnitude more cells than the rest, and an unclipped linear scale puts
+    # everything else in the palest shade. The clip is stated on the colourbar.
+    hb = ax1.hexbin(obs, pred, gridsize=90, cmap="Blues", mincnt=1,
+                    extent=(0, hi, 0, hi), linewidths=0)
+    counts = hb.get_array()
+    vmax = float(np.percentile(counts[counts > 0], 98))
+    hb.set_clim(0, vmax)
+    cb = fig.colorbar(hb, ax=ax1, fraction=0.046, pad=0.02, extend="max")
+    cb.set_label("cell-years per hexagon (colour clipped at the 98th "
+                 "percentile)", fontsize=8.5)
+    cb.outline.set_visible(False)
     ax1.plot([0, hi], [0, hi], "k-", lw=1.4, label="1:1")
     ax1.set_xlim(0, hi)
     ax1.set_ylim(0, hi)
@@ -208,7 +218,7 @@ def figure(obs, pred, df_in, pooled_in, df_oof):
 
     fig.tight_layout()
     dst = PLOT_DIR / "fig_fpi_rf_vs_observed.png"
-    fig.savefig(dst, dpi=170)
+    fig.savefig(dst, dpi=200)
     return dst
 
 

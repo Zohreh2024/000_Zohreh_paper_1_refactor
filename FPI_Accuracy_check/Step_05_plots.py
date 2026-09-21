@@ -156,8 +156,14 @@ def fig_accuracy(sample_years):
     fig2, ax2 = plt.subplots(figsize=(6.2, 4.8))
 
     hi = float(np.percentile(np.concatenate([obs, mod]), 99.5))
-    ax1.hexbin(obs, mod, gridsize=80, cmap=SEQ_BLUE, mincnt=1,
-               extent=(0, hi, 0, hi), linewidths=0)
+    hb = ax1.hexbin(obs, mod, gridsize=80, cmap=SEQ_BLUE, mincnt=1,
+                    extent=(0, hi, 0, hi), linewidths=0)
+    counts = hb.get_array()
+    hb.set_clim(0, float(np.percentile(counts[counts > 0], 98)))
+    cb1 = fig1.colorbar(hb, ax=ax1, fraction=0.046, pad=0.02, extend="max")
+    cb1.set_label("cell-years per hexagon (colour clipped at the 98th "
+                  "percentile)", fontsize=8.5)
+    cb1.outline.set_visible(False)
     ax1.plot([0, hi], [0, hi], color=INK_MUTED, lw=1.4, ls="--", zorder=3)
     ax1.text(hi * 0.80, hi * 0.72, "1:1", color=INK_MUTED, ha="left", va="top",
              fontsize=9)
