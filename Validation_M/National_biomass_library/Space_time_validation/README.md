@@ -25,20 +25,18 @@ conda run -p "C:\ProgramData\Anaconda3\envs\JinzhuLuto" python Step_05_write_rep
 Step_02 is the long one (~5 min: nine tables, 69,564 cells each, 30 years of
 climate per table) and skips tables that already exist.
 
-`--constrain none` reruns any of it without the vegetation constraint, and
-`--mprime-order eq1_of_mean` validates the other averaging order of the same
-fully-modelled M'. Outputs, figures and the report carry the suffix of whatever
-combination produced them (`_nvis`, `_nvis_eq1ofmean`, ...), so the variants
-coexist rather than overwrite one another.
+**The M′ validated here is the method**: `Eq1(mean_y FPI_y)` on both sides of
+the ratio — predict each year's FPI, average the FPI over the window, then apply
+Eq. (1) (Roxburgh et al. 2019, Sec. 2, p. 265). That is the default of every
+step. `--constrain none` drops the vegetation constraint and
+`--mprime-order mean_of_annual` runs the per-year sensitivity; outputs, figures
+and reports carry a suffix naming whatever produced them (`_nvis`,
+`_nvis_mean_of_annual`, …), so the variants coexist rather than overwrite one
+another. The unsuffixed report is the method.
 
-**Both averaging orders were run, and they agree.** `mean_of_annual`
-(`mean_y Eq1(FPI_y)` on both sides of the ratio) and `eq1_of_mean`
-(`Eq1(mean_y FPI_y)` on both sides) give median ratios within **0.73%** of each
-other in every run — the Jensen gap largely cancels once numerator and
-denominator are built in the same order, which is exactly what matched pairing
-is for. Only the M' layer differs between the two, so the variant is run by
-swapping the M' read at the pooled cells, not by rebuilding the predictor
-tables.
+**Both averaging orders were run, and they agree to within 0.73%** of the median
+ratio in every run — the Jensen gap largely cancels once numerator and
+denominator are built in the same order, which is what matched pairing is for.
 
 | script | what it does |
 |---|---|
@@ -112,10 +110,10 @@ reproduces the ranking.
 
 **The vegetation constraint raises the null more than it raises the runs, and
 that is the most useful thing this test produced.** Unconstrained, random cells
-give a ratio of 0.27 and the eight future runs 0.47-0.69, which looks like
-skill. Once "random" means *a random cell of the same vegetation subgroup*, the
-null rises to 0.59 - against which the future runs (0.41-0.78, present-day
-analogue 0.64) are barely distinguishable. Knowing the pre-1750 vegetation
+give a ratio of 0.27, which makes the future runs look like skill. Once "random"
+means *a random cell of the same vegetation subgroup*, the null rises to 0.59 —
+against which the future runs (0.42–0.79, present-day analogue 0.64) are barely
+distinguishable. Knowing the pre-1750 vegetation
 subgroup is most of what is needed to guess the biomass; the climate matching
 adds little beyond it on this sample.
 
@@ -150,8 +148,9 @@ outputs/reference_table.csv              Dataframe 1
 outputs/filter_trail.csv                 survivors after each filter
 outputs/reference_table_summary.csv      by maturity class
 outputs/tables/*.npz, *_slim.csv         Dataframe 2, nine sets
-outputs/matches_nvis.csv                 every site, every run, with distances
-                                         (matches.csv is the unconstrained twin)
+outputs/matches_nvis.csv                 the method, NVIS-constrained
+outputs/matches.csv                      the method, unconstrained
+outputs/matches_nvis_mean_of_annual.csv  the per-year sensitivity
 outputs/matches_climate_only_nvis.csv    the climate-only variant
 outputs/nvis_class_counts.csv            MVS classes inside the NLUM mask
 outputs/metrics_by_run.csv               every statistic, per run and stratum

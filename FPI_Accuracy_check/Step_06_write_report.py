@@ -219,10 +219,12 @@ def main():
         "Comparing a future projection against observed history would be neither of "
         "these: that is a trend comparison, and the two are not supposed to agree.")
 
-    figure(doc, "fig_01_accuracy.png",
-           "Figure 1. Modelled against observed FPI (a, five representative years, "
-           "hexbin density) and accuracy year by year (b). The gap between the two "
-           "lines in (b) is the cost of predicting an unseen year.")
+    figure(doc, "fig_01a_modelled_vs_observed.png",
+           "Figure 1a. Modelled against observed FPI, five representative years, "
+           "hexbin density, linear axes.")
+    figure(doc, "fig_01b_accuracy_by_year.png",
+           "Figure 1b. Accuracy year by year. The gap between the two lines is "
+           "the cost of predicting an unseen year.")
     figure(doc, "fig_02_hist_fpi_maps.png",
            "Figure 2. The 30-year mean FPI, observed (a) and modelled (b), and "
            "their difference (c). The pattern and the level both carry; residuals "
@@ -307,14 +309,16 @@ def main():
         "mismatch described above, and two of its eight windows come out positive."
         % (method.max(), method.min(), other.max(), other.min()))
 
-    figure(doc, "fig_04_mprime_change.png",
-           "Figure 4. The step FullCAM sees, by scenario and window. Blue is the "
-           "observed denominator as published in Option B, orange the modelled "
-           "one. Panel (a) is the method — Eq. (1) of the mean FPI — where the "
-           "averaging orders already matched on both sides and the bars barely "
-           "move, which is the expected result and a check on the arithmetic. "
-           "Panel (b) is the per-year sensitivity, where Option B's two positive "
-           "bars turn negative.")
+    figure(doc, "fig_04a_mprime_change_method.png",
+           "Figure 4a. The step FullCAM sees, on the method. Blue is the "
+           "observed historical FPI (the DCCEEW download), orange the modelled "
+           "historical FPI from the random forest — the layer this work uses, "
+           "since both the historical and the future FPI come from the forest. "
+           "The orders already matched on both sides here, so the bars barely "
+           "move: the expected result, and a check on the arithmetic.")
+    figure(doc, "fig_04b_mprime_change_sensitivity.png",
+           "Figure 4b. The same on the per-year sensitivity, where the two "
+           "positive bars of the observed-denominator route turn negative.")
     figure(doc, "fig_05_mprime_change_maps.png",
            "Figure 5. Where the projected change sits. Declines dominate the "
            "forested east, south-west and Tasmania; the increases are in arid "
@@ -346,6 +350,7 @@ def main():
         cv_df = pd.read_csv(COMP_OUT / "cv_summary.csv")
         dec_df = pd.read_csv(COMP_OUT / "change_by_baseline_decile.csv")
         ref_row = cmp_df[cmp_df["ssp"] == "New_M_2019"].iloc[0]
+        fut_sp = cmp_df[cmp_df["ssp"] != "New_M_2019"]["spatial_cv_pct"]
         fut = cmp_df[cmp_df["ssp"] != "New_M_2019"]
 
         doc.add_page_break()
@@ -510,13 +515,35 @@ def main():
         doc.add_paragraph(
             "This is a carrying-capacity total, not an inventory: M' is what a "
             "site could carry at maturity, not what stands on it today.")
-        figure(doc, "fig_10_totals.png",
-               "Figure 10. National total above-ground biomass by scenario-window "
-               "(a) against the New_M_2019 reference, and the same as a percentage "
-               "change (b). Note the non-monotonic ordering: SSP245 2070-2099 is "
-               "the mildest of the eight, which the Random_forest_CSIRO report "
-               "traces to ACCESS-CM2 r4i1p1f1 rainfall and humidity rather than to "
-               "the forcing level.", folder=COMP_PLOTS)
+        figure(doc, "fig_10a_national_total.png",
+               "Figure 10a. National total above-ground biomass by "
+               "scenario-window, against the New_M_2019 reference line.",
+               folder=COMP_PLOTS)
+        figure(doc, "fig_10b_national_total_change.png",
+               "Figure 10b. The same as a percentage change. Note the "
+               "non-monotonic ordering: SSP245 2070-2099 is the mildest of the "
+               "eight, which the Random_forest_CSIRO report traces to ACCESS-CM2 "
+               "r4i1p1f1 rainfall and humidity rather than to the forcing level.",
+               folder=COMP_PLOTS)
+
+        doc.add_heading("A third CV: future M' against the reference map",
+                        level=2)
+        doc.add_paragraph(
+            "The interannual and across-scenario CVs above have no counterpart "
+            "in New_M_2019, which is a single static layer. The spatial CV does: "
+            "sd over cells divided by the mean over cells, one number per map. "
+            "It rises from %.1f%% for New_M_2019 to %.1f-%.1f%% across the eight "
+            "scenario-windows, so the projection makes the map more uneven rather "
+            "than less — the losses are concentrated, not spread evenly, which is "
+            "the same thing the decile figure says from the other direction."
+            % (float(cmp_df[cmp_df["ssp"] == "New_M_2019"]["spatial_cv_pct"].iloc[0]),
+               float(fut_sp.min()), float(fut_sp.max())))
+        figure(doc, "fig_14a_spatial_cv_vs_reference.png",
+               "Figure 14a. Spatial CV of each future layer against the "
+               "New_M_2019 reference.", folder=COMP_PLOTS)
+        figure(doc, "fig_14b_spatial_cv_change.png",
+               "Figure 14b. The same as a change against the reference.",
+               folder=COMP_PLOTS)
 
         doc.add_heading("Where in the distribution the change falls", level=2)
         late = dec_df[(dec_df["window"] == "2070-2099") & (dec_df["ssp"] == "ssp585")]

@@ -142,7 +142,10 @@ def fig_accuracy(sample_years):
         mod.append(m[ok][idx])
     obs, mod = np.concatenate(obs), np.concatenate(mod)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.4, 4.5))
+    # Two standalone figures rather than one two-panel figure: they are read
+    # separately and each is easier to place on its own.
+    fig1, ax1 = plt.subplots(figsize=(6.2, 4.8))
+    fig2, ax2 = plt.subplots(figsize=(6.2, 4.8))
 
     hi = float(np.percentile(np.concatenate([obs, mod]), 99.5))
     ax1.hexbin(obs, mod, gridsize=80, cmap=SEQ_BLUE, mincnt=1,
@@ -155,7 +158,7 @@ def fig_accuracy(sample_years):
     ax1.set_xlabel("observed FPI (DCCEEW)")
     ax1.set_ylabel("modelled FPI (random forest)")
     ins = summary.loc["in_sample_full_grid"]
-    ax1.set_title("a  Modelled against observed, %s\nin sample: R$^2$ %.3f, "
+    ax1.set_title("a) Modelled against observed, %s\nin sample: R$^2$ %.3f, "
                   "RMSE %.2f, bias %+.3f"
                   % (", ".join(str(y) for y in sample_years),
                      ins["r2"], ins["rmse"], ins["bias"]), loc="left")
@@ -168,17 +171,21 @@ def fig_accuracy(sample_years):
     ax2.set_ylim(0.88, 1.0)
     ax2.set_xlabel("year")
     ax2.set_ylabel("R$^2$")
-    ax2.set_title("b  Accuracy year by year\nquote the out-of-fold line: "
+    ax2.set_title("b) Accuracy year by year\nquote the out-of-fold line: "
                   "pooled R$^2$ %.3f" % summary.loc["out_of_fold_groupcv_year", "r2"],
                   loc="left")
     ax2.legend(loc="lower left", fontsize=9)
     tidy(ax2, grid_axis="y")
 
-    fig.tight_layout()
-    dst = PLOT_DIR / "fig_01_accuracy.png"
-    fig.savefig(dst, dpi=200)
-    plt.close(fig)
-    return dst
+    out = []
+    for fig, ax, name in [(fig1, ax1, "fig_01a_modelled_vs_observed"),
+                          (fig2, ax2, "fig_01b_accuracy_by_year")]:
+        fig.tight_layout()
+        dst = PLOT_DIR / (name + ".png")
+        fig.savefig(dst, dpi=200)
+        plt.close(fig)
+        out.append(dst)
+    return out[0]
 
 
 # --------------------------------------------------------------------------- #
@@ -198,12 +205,12 @@ def fig_hist_maps():
 
     fig, axes = plt.subplots(1, 3, figsize=(12.6, 4.6))
     im0 = show_map(axes[0], obs, ext, SEQ_BLUE, vmin=0, vmax=hi,
-                   title="a  Observed mean FPI, 1985-2014")
+                   title="a) Observed mean FPI, 1985-2014")
     im1 = show_map(axes[1], mod, ext, SEQ_BLUE, vmin=0, vmax=hi,
-                   title="b  Modelled mean FPI, same years")
+                   title="b) Modelled mean FPI, same years")
     im2 = show_map(axes[2], diff, ext, DIVERGING,
                    norm=TwoSlopeNorm(vmin=-lim, vcenter=0, vmax=lim),
-                   title="c  Modelled - observed")
+                   title="c) Modelled - observed")
 
     for im, ax, lab in [(im0, axes[0], "FPI"), (im1, axes[1], "FPI"),
                         (im2, axes[2], "FPI difference")]:
@@ -252,7 +259,7 @@ def fig_denominator():
     ax0 = fig.add_subplot(gs[0])
     im = show_map(ax0, ratio, ext, DIVERGING,
                   norm=TwoSlopeNorm(vmin=0.8, vcenter=1.0, vmax=1.2),
-                  title="a  Modelled / observed historical M")
+                  title="a) Modelled / observed historical M")
     cb = fig.colorbar(im, ax=ax0, fraction=0.045, pad=0.03, extend="both")
     cb.set_label("ratio", fontsize=8.5, labelpad=2)
     cb.outline.set_visible(False)
@@ -267,7 +274,7 @@ def fig_denominator():
     ax1.set_xlabel("modelled M $\\div$ observed M")
     ax1.set_ylabel("cells")
     ax1.set_yticklabels([])
-    ax1.set_title("b  The denominator swap\nmedian %.4f (per-year order)"
+    ax1.set_title("b) The denominator swap\nmedian %.4f (per-year order)"
                   % med("RF / OBS, mean_of_annual"), loc="left")
     ax1.legend(fontsize=9, loc="upper left", bbox_to_anchor=(0.0, 0.98))
 
@@ -279,7 +286,7 @@ def fig_denominator():
              "median %.4f" % med("RF: mean_of_annual"), fontsize=9, color=INK)
     ax2.set_xlabel("mean$_y$ Eq1(FPI$_y$) $\\div$ Eq1(mean$_y$ FPI$_y$)")
     ax2.set_yticklabels([])
-    ax2.set_title("c  The averaging order (Jensen gap)\nsame layers, "
+    ax2.set_title("c) The averaging order (Jensen gap)\nsame layers, "
                   "two orders of operations", loc="left")
 
     fig.suptitle("The modelled denominator barely moves the level; the averaging "
@@ -331,19 +338,20 @@ def fig_mprime_change(valid):
     df = obs.merge(mod, on=key, suffixes=("_obs", "_mod"))
     df["label"] = df["ssp"].str.replace("ssp", "SSP") + "\n" + df["window"]
 
-    fig, axes = plt.subplots(1, 2, figsize=(12.4, 4.6), sharey=True)
+    figs = [plt.subplots(figsize=(7.4, 4.9)) for _ in range(2)]
+    axes = [a for _, a in figs]
     titles = {
-        "eq1_of_mean": "a  THE METHOD: Eq1(mean$_y$ FPI$_y$), both sides",
-        "mean_of_annual": "b  Sensitivity: mean$_y$ Eq1(FPI$_y$), both sides",
+        "eq1_of_mean": "a) THE METHOD: Eq1(mean$_y$ FPI$_y$), both sides",
+        "mean_of_annual": "b) Sensitivity: mean$_y$ Eq1(FPI$_y$), both sides",
     }
     for ax, order in zip(axes, ["eq1_of_mean", "mean_of_annual"]):
         d = df[df["averaging_order"] == order].sort_values(["window", "ssp"])
         x = np.arange(len(d))
         w = 0.38
         ax.bar(x - w / 2 - 0.01, d["pct_change_vs_New_M_2019_median_obs"], w,
-               color=OBS_C, label="observed denominator (Option B)")
+               color=OBS_C, label="observed historical FPI (DCCEEW download)")
         ax.bar(x + w / 2 + 0.01, d["pct_change_vs_New_M_2019_median_mod"], w,
-               color=MOD_C, label="modelled denominator (this work)")
+               color=MOD_C, label="modelled historical FPI (random forest)")
         ax.axhline(0, color=INK_MUTED, lw=1.1)
         ax.set_xticks(x)
         ax.set_xticklabels(d["label"], fontsize=8.5)
@@ -355,16 +363,19 @@ def fig_mprime_change(valid):
 
     lo = min(df["pct_change_vs_New_M_2019_median_mod"].min(),
              df["pct_change_vs_New_M_2019_median_obs"].min())
-    axes[0].set_ylim(lo - 4.5, max(2.5, df["pct_change_vs_New_M_2019_median_obs"].max() + 1))
-    axes[0].set_ylabel("median change in M' against New_M_2019 (%)")
-    axes[0].legend(loc="lower left", fontsize=9)
-    fig.suptitle("The step FullCAM sees from its historical maxAbgM to the future "
-                 "input, by scenario and window", fontsize=10.5, y=1.0, color=INK_2)
-    fig.tight_layout()
-    dst = PLOT_DIR / "fig_04_mprime_change.png"
-    fig.savefig(dst, dpi=200, bbox_inches="tight")
-    plt.close(fig)
-    return dst
+    hi = max(2.5, df["pct_change_vs_New_M_2019_median_obs"].max() + 1)
+    out = []
+    for (fig, ax), name in zip(figs, ["fig_04a_mprime_change_method",
+                                      "fig_04b_mprime_change_sensitivity"]):
+        ax.set_ylim(lo - 4.5, hi)
+        ax.set_ylabel("median change in M′ against New_M_2019 (%)")
+        ax.legend(loc="lower left", fontsize=9)
+        fig.tight_layout()
+        dst = PLOT_DIR / (name + ".png")
+        fig.savefig(dst, dpi=200, bbox_inches="tight")
+        plt.close(fig)
+        out.append(dst)
+    return out[0]
 
 
 # --------------------------------------------------------------------------- #

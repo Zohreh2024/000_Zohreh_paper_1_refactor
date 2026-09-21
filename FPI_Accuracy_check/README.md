@@ -157,10 +157,12 @@ output/Mprime_modelled_vs_observed_denominator.csv
 output_Mprime_rf/mean_of_annual/maxAbgMF_*.tif   240 annual + 8 window means
 output_Mprime_rf/eq1_of_mean/maxAbgMF_*.tif        8
 output/optionB_pct_change.csv                    Option B's change vs New_M_2019
-plots/fig_01_accuracy.png                        modelled vs observed, R2 by year
+plots/fig_01a_modelled_vs_observed.png           modelled vs observed FPI
+plots/fig_01b_accuracy_by_year.png               R2 by year, in sample vs out of fold
 plots/fig_02_hist_fpi_maps.png                   mean FPI: observed, modelled, difference
 plots/fig_03_denominator.png                     the swap, and the averaging order
-plots/fig_04_mprime_change.png                   the step FullCAM sees
+plots/fig_04a_mprime_change_method.png           the step FullCAM sees, on the method
+plots/fig_04b_mprime_change_sensitivity.png      the same, per-year sensitivity
 plots/fig_05_mprime_change_maps.png              where the change sits
 FPI_modelled_reference_report.docx
 ```

@@ -128,8 +128,8 @@ def main():
     doc.add_heading("Space-for-time validation of M' against the National "
                     "Biomass Library", 0)
     p = doc.add_paragraph()
-    order = ("Eq. (1) of the mean FPI" if "_eq1ofmean" in args.suffix
-             else "mean of the annual Eq. (1) M")
+    order = ("mean of the annual Eq. (1) M" if "_mean_of_annual" in args.suffix
+             else "Eq. (1) of the mean FPI (the method)")
     r = p.add_run("Validation_M/National_biomass_library/Space_time_validation · "
                   "generated %s · M' with every component of the ratio produced "
                   "by the random forest · averaging order: %s"
@@ -395,16 +395,19 @@ def main():
                 "aggregated to the scale M' is defined on.")
 
     # --- the other averaging order ------------------------------------- #
-    twin_suffix = (args.suffix.replace("_eq1ofmean", "")
-                   if "_eq1ofmean" in args.suffix else args.suffix + "_eq1ofmean")
+    twin_suffix = (args.suffix.replace("_mean_of_annual", "")
+                   if "_mean_of_annual" in args.suffix
+                   else args.suffix + "_mean_of_annual")
     twin_path = OUT_DIR / ("metrics_by_run%s.csv" % twin_suffix)
     if twin_path.exists():
         twin = pd.read_csv(twin_path)
         twin = twin[twin["stratum"] == "analogue found"].set_index("run")
-        this_order = ("Eq. (1) of the mean FPI" if "_eq1ofmean" in args.suffix
+        this_order = ("mean of the annual Eq. (1) M"
+                      if "_mean_of_annual" in args.suffix
+                      else "Eq. (1) of the mean FPI (the method)")
+        that_order = ("Eq. (1) of the mean FPI (the method)"
+                      if "_mean_of_annual" in args.suffix
                       else "mean of the annual Eq. (1) M")
-        that_order = ("mean of the annual Eq. (1) M" if "_eq1ofmean" in args.suffix
-                      else "Eq. (1) of the mean FPI")
 
         doc.add_heading("The other averaging order", level=2)
         doc.add_paragraph(
@@ -544,7 +547,8 @@ def main():
 
     report = HERE / ("%s%s.docx"
                      % (REPORT_STEM,
-                        "_eq1ofmean" if "_eq1ofmean" in args.suffix else ""))
+                        "_mean_of_annual" if "_mean_of_annual" in args.suffix
+                        else ""))
     doc.save(report)
     print("wrote %s" % report)
 

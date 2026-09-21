@@ -69,7 +69,11 @@ from common import (CLIM_VARS, HIST_YEARS, climate_features_at,       # noqa: E4
 
 OUT_DIR = HERE / "outputs" / "tables"
 FPI_ACC = ROOT / "FPI_Accuracy_check"
-MPRIME_DIR = FPI_ACC / "output_Mprime_rf" / "mean_of_annual"
+# The method is Eq.(1) of the window-mean FPI (Roxburgh et al. 2019, Sec. 2,
+# p. 265: one FPI per location in, one M out). `mean_of_annual` is the
+# sensitivity and holds the annual rasters.
+MPRIME_OFMEAN = FPI_ACC / "output_Mprime_rf" / "eq1_of_mean"
+MPRIME_ANNUAL = FPI_ACC / "output_Mprime_rf" / "mean_of_annual"
 FPI_FUT_DIR = RF_DIR / "output"
 FPI_HIST = FPI_ACC / "output" / "fpi_rf_1985-2014_mean.tif"
 NEW_M = ROOT / "Data" / "Processed" / "maxAbgM_v2" / "New_M_2019_NLUM.tif"
@@ -144,7 +148,8 @@ def slim_frame(lat, lon, clim, names, extra):
     return pd.DataFrame(out)
 
 
-def build(name, years, ssp, rows, cols, lat, lon, soil, jobs, overwrite):
+def build(name, years, ssp, rows, cols, lat, lon, soil, jobs, overwrite,
+          order="eq1_of_mean"):
     dst = OUT_DIR / ("%s.npz" % name)
     if dst.exists() and not overwrite:
         print("  %s exists, kept" % dst.name)
@@ -159,8 +164,11 @@ def build(name, years, ssp, rows, cols, lat, lon, soil, jobs, overwrite):
         fpi = read_at(FPI_HIST, rows, cols)
     else:
         win = "%d-%d" % (years[0], years[-1])
-        mprime = read_at(MPRIME_DIR / ("maxAbgMF_%s_%s_mean.tif" % (ssp, win)),
-                         rows, cols)
+        mprime = read_at(
+            (MPRIME_OFMEAN / ("maxAbgMF_from_mean_fpi_%s_%s.tif" % (ssp, win)))
+            if order == "eq1_of_mean"
+            else (MPRIME_ANNUAL / ("maxAbgMF_%s_%s_mean.tif" % (ssp, win))),
+            rows, cols)
         fpi = read_at(FPI_FUT_DIR / ("fpi_%s_%s_mean.tif" % (ssp, win)), rows, cols)
 
     np.savez_compressed(
@@ -182,6 +190,10 @@ def build(name, years, ssp, rows, cols, lat, lon, soil, jobs, overwrite):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--downsample", type=int, default=10)
+    ap.add_argument("--order", choices=["eq1_of_mean", "mean_of_annual"],
+                    default="eq1_of_mean",
+                    help="which averaging order of M' to store (default: the "
+                         "method)")
     ap.add_argument("--jobs", type=int, default=6)
     ap.add_argument("--overwrite", action="store_true")
     args = ap.parse_args()
@@ -191,13 +203,14 @@ def main():
 
     print("historical 1985-2014")
     build("historical_table", HIST_YEARS, None, rows, cols, lat, lon, soil,
-          args.jobs, args.overwrite)
+          args.jobs, args.overwrite, args.order)
 
     for win, years in WINDOWS.items():
         for ssp in SSPS:
             print("%s %s" % (ssp, win))
             build("future_table_%s_%s" % (ssp, win), years, ssp,
-                  rows, cols, lat, lon, soil, args.jobs, args.overwrite)
+                  rows, cols, lat, lon, soil, args.jobs, args.overwrite,
+                  args.order)
 
     print("\ntables in %s" % OUT_DIR)
 

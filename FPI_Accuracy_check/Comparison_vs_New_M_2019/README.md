@@ -46,7 +46,7 @@ confuse:
 |---|---|---|
 | **interannual** | the 30 years within one scenario-window, per cell | how much M′ moves from year to year under a single scenario |
 | **across-scenario** | the four SSP window means, per cell | how much the scenario choice matters |
-| **spatial** | cells within one layer, one number per layer | how spread out the map is as a whole (in the CSV) |
+| **spatial** | cells within one layer, one number per layer | how spread out the map is as a whole — the only one of the three that `New_M_2019` also has, so it is the CV that compares future M′ with the reference (`fig_14`) |
 
 `New_M_2019` is a single layer and has no interannual dimension, so the
 historical reference for the first row is rebuilt from the 30 **modelled**
@@ -65,8 +65,11 @@ assuming it.
 | `fig_07_cv_change.png` | future CV − historical CV, in percentage points |
 | `fig_08_cv_across_scenarios.png` | scenario disagreement, and how it compares with interannual variability |
 | `fig_09_scatter_vs_New_M_2019.png` | M′ against the reference cell by cell, with r, slope, bias, RMSE |
-| `fig_10_totals.png` | area-weighted national total biomass, Mt DM, and its change |
+| `fig_10a_national_total.png` | area-weighted national total biomass, Mt DM |
+| `fig_10b_national_total_change.png` | the same as a percentage change |
 | `fig_11_change_by_decile.png` | median change by decile of `New_M_2019` — where in the distribution the loss falls |
+| `fig_14a_spatial_cv_vs_reference.png` | **spatial CV of future M′ against `New_M_2019`** — the only CV the two share, since the reference is a single static layer |
+| `fig_14b_spatial_cv_change.png` | the same as a change against the reference |
 | `fig_13_rf_mprime_bars.png` | **the headline bar chart**: median M′ per scenario-window (19.50, 17.62, 19.19, 20.09 mid-century; 16.96, 19.20, 15.42, 15.53 late), every component from the random forest, against the hatched 1985–2014 baseline of 20.43 and the `New_M_2019` reference line (`Step_09_paired_bars.py --mode rf_only`) |
 | `fig_12_paired_bars.png` | the same layout with Eq. (1) M beside it, so the footing gap and the climate signal sit on one axis (`--mode footings`) |
 
@@ -146,6 +149,11 @@ south by several per cent. `cell_area_ha()` in Step_07 does the weighting, and
 the totals are in Mt DM over the whole NLUM mask — a carrying-capacity figure,
 not an inventory estimate, since M′ is what a site could carry rather than what
 stands on it.
+
+**Spatial CV rises everywhere.** 169.8% for `New_M_2019` against 175–202% across
+the eight scenario-windows, so the projection makes the map more uneven rather
+than less: the losses are concentrated, which is the decile result seen from the
+other direction.
 
 ## Axes
 

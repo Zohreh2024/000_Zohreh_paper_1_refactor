@@ -307,8 +307,8 @@ def main():
     ap.add_argument("--constrain", choices=["none", "nvis"], default="nvis",
                     help="restrict each site's candidates to its own pre-1750 "
                          "NVIS Major Vegetation Subgroup (default)")
-    ap.add_argument("--mprime-order", choices=["mean_of_annual", "eq1_of_mean"],
-                    default="mean_of_annual",
+    ap.add_argument("--mprime-order", choices=["eq1_of_mean", "mean_of_annual"],
+                    default="eq1_of_mean",
                     help="which averaging order of M' to validate. Both have a "
                          "random-forest historical denominator; they differ in "
                          "whether Eq. (1) is applied per year and then averaged, "
@@ -410,6 +410,8 @@ def main():
                 continue
             tab = load_table(p)
             if args.mprime_order == "eq1_of_mean":
+                # Step_02 already stores this order, but re-reading keeps the
+                # two steps independent of which order the tables were built on.
                 alt = EQ1_OF_MEAN_DIR / ("maxAbgMF_from_mean_fpi_%s_%s.tif"
                                          % (ssp, win))
                 if not alt.exists():
@@ -431,8 +433,8 @@ def main():
     suffix = "" if args.features == "all" else "_climate_only"
     if args.constrain == "nvis":
         suffix += "_nvis"
-    if args.mprime_order == "eq1_of_mean":
-        suffix += "_eq1ofmean"
+    if args.mprime_order == "mean_of_annual":
+        suffix += "_mean_of_annual"
     matches.to_csv(OUT_DIR / ("matches%s.csv" % suffix), index=False)
 
     # --- metrics ---------------------------------------------------------- #

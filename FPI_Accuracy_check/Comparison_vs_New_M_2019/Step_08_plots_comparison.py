@@ -322,7 +322,8 @@ def fig_totals():
     ref = df[df["ssp"] == "New_M_2019"]["total_Mt_DM"].iloc[0]
     d = df[df["ssp"] != "New_M_2019"].copy()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.2, 4.6))
+    fig1, ax1 = plt.subplots(figsize=(7.0, 4.8))
+    fig2, ax2 = plt.subplots(figsize=(6.4, 4.8))
 
     x = np.arange(len(WINDOWS))
     w = 0.2
@@ -333,8 +334,8 @@ def fig_totals():
         ax1.bar(pos, vals, w, color=SSP_C[ssp], label=label(ssp))
         # Label inside the bar: above it the labels run into the baseline rule.
         for p, v in zip(pos, vals):
-            ax1.text(p, v - ref * 0.03, label(ssp)[3:], ha="center", va="top",
-                     fontsize=8.5, color="white")
+            ax1.text(p, v - ref * 0.03, label(ssp), ha="center", va="top",
+                     fontsize=8, color="white")
     ax1.axhline(ref, color=INK, lw=1.4, ls="--", zorder=3)
     ax1.text(-0.42, ref + ref * 0.015, "New_M_2019  %.0f Mt DM" % ref,
              va="bottom", ha="left", fontsize=9, color=INK)
@@ -342,7 +343,7 @@ def fig_totals():
     ax1.set_xticklabels(WINDOWS)
     ax1.set_ylabel("national total above-ground biomass (Mt DM)")
     ax1.set_ylim(0, max(d["total_Mt_DM"].max(), ref) * 1.12)
-    ax1.set_title("a  Area-weighted national total", loc="left")
+    ax1.set_title("a) Area-weighted national total", loc="left")
     tidy(ax1, grid_axis="y")
 
     for ssp in SSPS:
@@ -356,16 +357,18 @@ def fig_totals():
     ax2.set_xticklabels(WINDOWS)
     ax2.set_xlim(-0.25, len(WINDOWS) - 0.45)
     ax2.set_ylabel("change in the national total (%)")
-    ax2.set_title("b  Change against New_M_2019", loc="left")
+    ax2.set_title("b) Change against New_M_2019", loc="left")
     tidy(ax2, grid_axis="y")
 
-    fig.suptitle("The national carrying capacity implied by each scenario-window",
-                 fontsize=11, color=INK_2)
-    fig.tight_layout()
-    dst = PLOT_DIR / "fig_10_totals.png"
-    fig.savefig(dst, dpi=190, bbox_inches="tight")
-    plt.close(fig)
-    return dst
+    out = []
+    for fig, name in [(fig1, "fig_10a_national_total"),
+                      (fig2, "fig_10b_national_total_change")]:
+        fig.tight_layout()
+        dst = PLOT_DIR / (name + ".png")
+        fig.savefig(dst, dpi=190, bbox_inches="tight")
+        plt.close(fig)
+        out.append(dst)
+    return out[0]
 
 
 # --------------------------------------------------------------------------- #
@@ -405,6 +408,83 @@ def fig_decile():
     return dst
 
 
+# --------------------------------------------------------------------------- #
+# 14 - CV of future M' against the CV of New_M_2019
+# --------------------------------------------------------------------------- #
+
+def fig_cv_vs_reference():
+    """Spatial CV: how uneven each map is, future against the reference.
+
+    This is the third sense of "CV" in this folder and the only one that puts
+    future M' and New_M_2019 on the same footing, because New_M_2019 is a single
+    layer and has no year-to-year or across-scenario dimension to vary over.
+    sd over cells divided by the mean over cells, per layer; a rise means the
+    projected change is concentrated rather than spread evenly.
+    """
+    df = pd.read_csv(OUT_DIR / ("comparison_vs_New_M_2019%s.csv"
+                                % ("" if ORDER == "eq1_of_mean"
+                                   else "_mean_of_annual")))
+    ref = float(df[df["ssp"] == "New_M_2019"]["spatial_cv_pct"].iloc[0])
+    d = df[df["ssp"] != "New_M_2019"].copy()
+
+    fig, ax = plt.subplots(figsize=(10.4, 4.9))
+    x = np.arange(len(WINDOWS))
+    w = 0.2
+    for i, ssp in enumerate(SSPS):
+        vals = [float(d[(d["ssp"] == ssp) & (d["window"] == win)]["spatial_cv_pct"].iloc[0])
+                for win in WINDOWS]
+        pos = x + (i - 1.5) * (w + 0.015)
+        ax.bar(pos, vals, w, color=SSP_C[ssp], label=label(ssp))
+        for pp, v in zip(pos, vals):
+            ax.text(pp, v + ref * 0.012, "%.0f" % v, ha="center", fontsize=8.5,
+                    color=INK_2)
+    ax.axhline(ref, color=INK, lw=1.6, ls="--", zorder=3)
+    # Below the line and hard right: above it the annotation lands on the
+    # first bar's value label.
+    ax.text(len(WINDOWS) - 0.52, ref - ref * 0.035,
+            "New_M_2019  %.1f%%" % ref, va="top", ha="right", fontsize=9,
+            color=INK)
+    ax.set_xticks(x)
+    ax.set_xticklabels(WINDOWS)
+    ax.set_ylabel("spatial CV of the layer (%)")
+    ax.set_ylim(0, max(d["spatial_cv_pct"].max(), ref) * 1.18)
+    ax.set_title("a) Spatial CV: future M′ against the reference layer",
+                 loc="left")
+    ax.legend(fontsize=9, ncol=4, loc="upper left", bbox_to_anchor=(0, 0.93))
+    tidy(ax, grid_axis="y")
+
+    fig.suptitle("How uneven the map is, and how the projection changes that",
+                 fontsize=11, color=INK_2)
+    fig.tight_layout()
+    dst = PLOT_DIR / "fig_14a_spatial_cv_vs_reference.png"
+    fig.savefig(dst, dpi=190)
+    plt.close(fig)
+
+    # b) the same numbers as a change against the reference, which is the
+    # comparison the question actually asks for
+    fig, ax = plt.subplots(figsize=(8.4, 4.9))
+    for ssp in SSPS:
+        vals = [100 * (float(d[(d["ssp"] == ssp) & (d["window"] == win)]
+                             ["spatial_cv_pct"].iloc[0]) - ref) / ref
+                for win in WINDOWS]
+        ax.plot(x, vals, "-o", color=SSP_C[ssp], lw=2, ms=6, label=label(ssp))
+        ax.text(x[-1] + 0.04, vals[-1], " " + label(ssp), va="center",
+                fontsize=9, color=INK_2)
+    ax.axhline(0, color=INK_MUTED, lw=1.1)
+    ax.set_xticks(x)
+    ax.set_xticklabels(WINDOWS)
+    ax.set_xlim(-0.25, len(WINDOWS) - 0.45)
+    ax.set_ylabel("change in spatial CV against New_M_2019 (%)")
+    ax.set_title("b) The projection makes the map more uneven, not less",
+                 loc="left")
+    tidy(ax, grid_axis="y")
+    fig.tight_layout()
+    dst_b = PLOT_DIR / "fig_14b_spatial_cv_change.png"
+    fig.savefig(dst_b, dpi=190)
+    plt.close(fig)
+    return dst
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--only", nargs="*", default=None)
@@ -416,7 +496,8 @@ def main():
 
     PLOT_DIR.mkdir(parents=True, exist_ok=True)
     jobs = {"6": fig_cv_interannual, "7": fig_cv_change, "8": fig_cv_scenarios,
-            "9": fig_scatter, "10": fig_totals, "11": fig_decile}
+            "9": fig_scatter, "10": fig_totals, "11": fig_decile,
+            "14": fig_cv_vs_reference}
     for k in (args.only or list(jobs)):
         print("building figure %s ..." % k, flush=True)
         print("  -> %s" % jobs[k]().name)
