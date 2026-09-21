@@ -61,6 +61,7 @@ NLUM_MASK = ROOT / "Data" / "NLUM_Mask" / "NLUM_2010-11_mask.tif"
 SSPS = ["ssp126", "ssp245", "ssp370", "ssp585"]
 WINDOWS = ["2035-2064", "2070-2099"]
 DECIMATE = 4                     # every 4th row/col for the map panels
+PER_YEAR_POINTS = 60_000         # cells drawn per year for the hexbin
 
 # --- palette --------------------------------------------------------------- #
 SURFACE = "#fcfcfb"
@@ -127,17 +128,24 @@ def show_map(ax, arr, extent, cmap, norm=None, vmin=None, vmax=None, title=""):
 # --------------------------------------------------------------------------- #
 
 def fig_accuracy(sample_years):
+    """Modelled against observed FPI, and accuracy year by year.
+
+    Every one of the 30 years is plotted, subsampled to keep the hexbin
+    tractable. An earlier version drew five hand-picked years under a title
+    carrying the pooled 30-year statistics, so the caption and the cloud
+    described different samples; they now describe the same one.
+    """
     by_year = pd.read_csv(OUT_DIR / "accuracy_by_year.csv")
     oof = pd.read_csv(OUT_DIR / "oof_accuracy_by_year.csv")
     summary = pd.read_csv(OUT_DIR / "accuracy_summary.csv").set_index("scheme")
 
     rng = np.random.default_rng(42)
     obs, mod = [], []
-    for y in sample_years:
+    for y in sample_years:        # all 30 historical years
         o, _ = read(OBS_FPI_DIR / ("fpi_%d.tif" % y))
         m, _ = read(OUT_DIR / ("fpi_rf_%d.tif" % y))
         ok = np.isfinite(o) & np.isfinite(m)
-        idx = rng.choice(int(ok.sum()), 60_000, replace=False)
+        idx = rng.choice(int(ok.sum()), PER_YEAR_POINTS, replace=False)
         obs.append(o[ok][idx])
         mod.append(m[ok][idx])
     obs, mod = np.concatenate(obs), np.concatenate(mod)
@@ -158,9 +166,9 @@ def fig_accuracy(sample_years):
     ax1.set_xlabel("observed FPI (DCCEEW)")
     ax1.set_ylabel("modelled FPI (random forest)")
     ins = summary.loc["in_sample_full_grid"]
-    ax1.set_title("a) Modelled against observed, %s\nin sample: R$^2$ %.3f, "
-                  "RMSE %.2f, bias %+.3f"
-                  % (", ".join(str(y) for y in sample_years),
+    ax1.set_title("a) Modelled against observed FPI, all %d years "
+                  "(%d-%d)\nin sample: R$^2$ %.3f, RMSE %.2f, bias %+.3f"
+                  % (len(sample_years), min(sample_years), max(sample_years),
                      ins["r2"], ins["rmse"], ins["bias"]), loc="left")
     tidy(ax1)
 
@@ -435,7 +443,7 @@ def main():
         option_b_change(valid, force=True)
 
     jobs = {
-        "1": lambda: fig_accuracy([1985, 1994, 2002, 2010, 2014]),
+        "1": lambda: fig_accuracy(list(range(1985, 2015))),
         "2": fig_hist_maps,
         "3": fig_denominator,
         "4": lambda: fig_mprime_change(valid),

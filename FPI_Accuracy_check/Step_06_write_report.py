@@ -220,8 +220,12 @@ def main():
         "these: that is a trend comparison, and the two are not supposed to agree.")
 
     figure(doc, "fig_01a_modelled_vs_observed.png",
-           "Figure 1a. Modelled against observed FPI, five representative years, "
-           "hexbin density, linear axes.")
+           "Figure 1a. Modelled against observed FPI over all 30 historical "
+           "years, 60,000 cells drawn per year, hexbin density on linear axes. "
+           "The statistics in the panel are the pooled in-sample figures for the "
+           "same 30 years, so the caption and the cloud describe one sample. "
+           "(An earlier version plotted five hand-picked years beneath the "
+           "30-year statistics.)")
     figure(doc, "fig_01b_accuracy_by_year.png",
            "Figure 1b. Accuracy year by year. The gap between the two lines is "
            "the cost of predicting an unseen year.")
