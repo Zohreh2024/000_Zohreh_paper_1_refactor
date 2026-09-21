@@ -58,11 +58,37 @@ SUBSAMPLE = 50_000          # points per year kept for the pooled figure
 
 
 def metrics(obs, pred):
+    """The standard model-evaluation set for a modelled-against-observed pair.
+
+    Each one answers a different question, and quoting only R2 hides the rest:
+
+      R2 / NSE      variance explained; identical here because the reference is
+                    the observed mean, which is what Nash-Sutcliffe uses
+      Pearson r     correlation alone - blind to any level shift
+      RMSE, MAE     typical error in FPI units; RMSE punishes large misses, and
+                    the gap between them says how skewed the errors are
+      nrmse_pct     RMSE as a percentage of the observed mean, for comparing
+                    across variables with different units
+      bias, pbias   mean signed error, absolute and as a percentage: the
+                    systematic component
+      slope, intercept   ordinary least squares of modelled on observed. A
+                    slope below 1 with a positive intercept is the classic
+                    regression-to-the-mean signature
+      ccc           Lin's concordance: correlation AND agreement with 1:1, so
+                    it falls if either the scatter or the offset is bad
+      willmott_d    index of agreement, bounded 0-1, less dominated by outliers
+                    than R2
+    """
     obs = obs.astype("float64")
     pred = pred.astype("float64")
     resid = pred - obs
     ss_res = float(np.sum(resid ** 2))
     ss_tot = float(np.sum((obs - obs.mean()) ** 2))
+    slope, intercept = np.polyfit(obs, pred, 1)
+    cov = float(np.mean((obs - obs.mean()) * (pred - pred.mean())))
+    ccc = (2 * cov / (obs.var() + pred.var() + (obs.mean() - pred.mean()) ** 2)
+           if (obs.var() + pred.var()) else np.nan)
+    denom_d = float(np.sum((np.abs(pred - obs.mean()) + np.abs(obs - obs.mean())) ** 2))
     return {
         "n": int(obs.size),
         "r2": 1 - ss_res / ss_tot if ss_tot else np.nan,
@@ -75,6 +101,12 @@ def metrics(obs, pred):
         "pred_mean": float(pred.mean()),
         "obs_sd": float(obs.std()),
         "pred_sd": float(pred.std()),
+        "nrmse_pct": float(100 * np.sqrt(np.mean(resid ** 2)) / obs.mean()),
+        "slope": float(slope),
+        "intercept": float(intercept),
+        "ccc": float(ccc),
+        "nse": 1 - ss_res / ss_tot if ss_tot else np.nan,
+        "willmott_d": 1 - ss_res / denom_d if denom_d else np.nan,
     }
 
 

@@ -197,14 +197,54 @@ def main():
 
     # ----------------------------------------------------------- accuracy ---
     doc.add_heading("Accuracy of the modelled historical FPI", level=1)
+    def _m(row, key, spec="%.3f"):
+        return spec % row[key] if key in row and pd.notna(row[key]) else "—"
+
     table(doc, [
-        ["Out of fold, year-group CV — quote this",
-         "%.3f" % oof["r2"], "%.3f" % oof["rmse"], "%.3f" % oof["mae"],
-         "%+.3f" % oof["bias"]],
-        ["In sample, full grid, 30 years",
-         "%.3f" % ins["r2"], "%.3f" % ins["rmse"], "%.3f" % ins["mae"],
-         "%+.3f" % ins["bias"]],
-    ], ["", "R²", "RMSE", "MAE", "bias"], widths=[3.1, 0.8, 0.8, 0.8, 0.8])
+        ["R² / Nash-Sutcliffe", "variance explained; 1.0 is perfect",
+         _m(ins, "r2"), _m(oof, "r2")],
+        ["Pearson r", "correlation only; blind to a level shift",
+         _m(ins, "pearson_r"), _m(oof, "pearson_r")],
+        ["RMSE (FPI units)", "typical error, large misses weighted heavily",
+         _m(ins, "rmse"), _m(oof, "rmse")],
+        ["RMSE (% of observed mean)", "the same error, unit-free",
+         _m(ins, "nrmse_pct", "%.1f"), _m(oof, "nrmse_pct", "%.1f")],
+        ["MAE (FPI units)", "typical error without that weighting",
+         _m(ins, "mae"), _m(oof, "mae")],
+        ["bias (FPI units)", "mean of modelled minus observed",
+         _m(ins, "bias", "%+.4f"), _m(oof, "bias", "%+.4f")],
+        ["bias (%)", "the same as a share of the observed mean",
+         _m(ins, "pbias", "%+.3f"), _m(oof, "pbias", "%+.3f")],
+        ["OLS slope", "1.0 means no compression of the range",
+         _m(ins, "slope"), _m(oof, "slope")],
+        ["OLS intercept", "with slope < 1, the regression-to-the-mean pair",
+         _m(ins, "intercept"), _m(oof, "intercept")],
+        ["Lin's concordance", "correlation AND agreement with 1:1",
+         _m(ins, "ccc"), _m(oof, "ccc")],
+        ["Willmott's d", "index of agreement, 0-1, robust to outliers",
+         _m(ins, "willmott_d"), _m(oof, "willmott_d")],
+        ["observed mean, sd", "the reference distribution",
+         "%.2f, %.2f" % (ins["obs_mean"], ins["obs_sd"]),
+         "%.2f, %.2f" % (oof["obs_mean"], oof["obs_sd"])],
+        ["modelled mean, sd", "narrower sd = the forest smooths extremes",
+         "%.2f, %.2f" % (ins["pred_mean"], ins["pred_sd"]),
+         "%.2f, %.2f" % (oof["pred_mean"], oof["pred_sd"])],
+        ["n", "cell-years compared",
+         format(int(ins["n"]), ","), format(int(oof["n"]), ",")],
+    ], ["statistic", "what it answers", "in sample", "out of fold"],
+        widths=[1.5, 2.4, 1.0, 1.0])
+    doc.add_paragraph(
+        "These are the statistics for Figure 1a and 1b. Two of them deserve "
+        "comment. The OLS slope is %.3f in sample and %.3f out of fold, with a "
+        "positive intercept in both: the forest compresses the range slightly, "
+        "over-predicting the lowest cells and under-predicting the highest, "
+        "which is what a tree ensemble does by construction because it averages "
+        "over leaves and cannot extrapolate. The modelled standard deviation is "
+        "correspondingly smaller than the observed one (%.2f against %.2f out of "
+        "fold). Neither is large enough to distort the ratio M' is built from, "
+        "since the same compression appears in the numerator and the "
+        "denominator, but both should be stated rather than left to the R²."
+        % (ins["slope"], oof["slope"], oof["pred_sd"], oof["obs_sd"]))
 
     doc.add_paragraph(
         "The two rows answer different questions. Out of fold, every row was "
@@ -364,7 +404,7 @@ def main():
     method = mp[mp["averaging_order"] == "eq1_of_mean"]["pct_change_vs_New_M_2019_median"]
     other = mp[mp["averaging_order"] == "mean_of_annual"]["pct_change_vs_New_M_2019_median"]
     doc.add_paragraph(
-        "Median change in M' against New_M_2019, per cent — the step FullCAM sees "
+        "Median change in M' against Revised_M_Roxburgh, per cent — the step FullCAM sees "
         "from its historical maxAbgM to the future input. On the method every "
         "window is negative, from %+.1f%% to %+.1f%%; the per-year sensitivity "
         "gives %+.1f%% to %+.1f%%, slightly deeper throughout. Option B's column "
@@ -373,10 +413,10 @@ def main():
         % (method.max(), method.min(), other.max(), other.min()))
 
     doc.add_paragraph(
-        "Figure 4 compares New_M_2019 — the revised maximum biomass layer of "
+        "Figure 4 compares Revised_M_Roxburgh — the revised maximum biomass layer of "
         "Roxburgh et al. (2019), which is the historical maxAbgM input FullCAM "
         "reads — against the future M' this work produces. Each bar is the "
-        "median over the NLUM mask of 100 x (M' - New_M_2019) / New_M_2019 for "
+        "median over the NLUM mask of 100 x (M' - Revised_M_Roxburgh) / Revised_M_Roxburgh for "
         "one scenario and one 30-year window, so a bar at -10 means the typical "
         "cell carries ten per cent less potential biomass than the layer FullCAM "
         "uses today. The two colours are two different historical denominators: "
@@ -404,7 +444,7 @@ def main():
            "positive bars of the observed-denominator route turn negative.")
     doc.add_paragraph(
         "Figure 5 is the same quantity as Figure 4, cell by cell instead of "
-        "summarised to a median: 100 x (M' - New_M_2019) / New_M_2019 for each "
+        "summarised to a median: 100 x (M' - Revised_M_Roxburgh) / Revised_M_Roxburgh for each "
         "of the eight scenario-windows, on one diverging scale centred on zero, "
         "so blue is a loss of potential biomass against today's layer and red a "
         "gain. The rows are the two windows and the columns the four scenarios, "
@@ -416,7 +456,7 @@ def main():
         "change — which is why Figure 4 quotes medians and the comparison "
         "section also reports totals in Mt DM.")
     figure(doc, "fig_05_mprime_change_maps.png",
-           "Figure 5. Projected change in M' against New_M_2019, per cell, for "
+           "Figure 5. Projected change in M' against Revised_M_Roxburgh, per cell, for "
            "each scenario and window.")
 
     # ------------------------------------------------------------- checks ---
@@ -437,7 +477,7 @@ def main():
         doc.add_paragraph(it, style="List Bullet")
 
     # ==================================================================== #
-    # Part 2 - the comparison against New_M_2019
+    # Part 2 - the comparison against Revised_M_Roxburgh
     # ==================================================================== #
     comp_csv = COMP_OUT / "comparison_vs_New_M_2019.csv"
     if comp_csv.exists():
@@ -446,19 +486,20 @@ def main():
         dec_df = pd.read_csv(COMP_OUT / "change_by_baseline_decile.csv")
         ref_row = cmp_df[cmp_df["ssp"] == "New_M_2019"].iloc[0]
         fut_sp = cmp_df[cmp_df["ssp"] != "New_M_2019"]["spatial_cv_pct"]
+        fut_rows = cmp_df[cmp_df["ssp"] != "New_M_2019"]
         fut = cmp_df[cmp_df["ssp"] != "New_M_2019"]
 
         doc.add_page_break()
-        doc.add_heading("Future M' against New_M_2019", level=1)
+        doc.add_heading("Future M' against Revised_M_Roxburgh", level=1)
         doc.add_paragraph(
-            "New_M_2019 is the layer FullCAM ships as its historical maxAbgM, so "
+            "Revised_M_Roxburgh is the layer FullCAM ships as its historical maxAbgM, so "
             "it is the reference the future inputs step away from. Its mean over "
             "the NLUM mask is %.2f t DM ha⁻¹ and its area-weighted national total "
             "is %s Mt DM." % (ref_row["Mprime_mean"],
                               format(int(round(ref_row["total_Mt_DM"])), ",")))
         doc.add_paragraph(
             "The comparison is anchored rather than independent, and it is worth "
-            "being explicit about why. λ × Original_M_2004 IS New_M_2019, so "
+            "being explicit about why. λ × Original_M_2004 IS Revised_M_Roxburgh, so "
             "averaging the 30 modelled historical years of M' must return the "
             "reference exactly. It does, to a median relative error of 2.8e-08 "
             "(max 1.9e-07) — float32 rounding. That is a strong check that the "
@@ -469,24 +510,24 @@ def main():
 
         doc.add_heading("The statistics, and what each one is for", level=2)
         table(doc, [
-            ["bias", "mean(M' − New_M_2019), t DM ha⁻¹",
+            ["bias", "mean(M' − Revised_M_Roxburgh), t DM ha⁻¹",
              "average level shift; sign tells the direction, and it can be near "
              "zero while individual cells move a lot"],
-            ["RMSE", "√mean((M' − New_M_2019)²), t DM ha⁻¹",
+            ["RMSE", "√mean((M' − Revised_M_Roxburgh)²), t DM ha⁻¹",
              "typical size of a cell's change, squaring so that large movers "
              "dominate; always ≥ MAE"],
-            ["MAE", "mean|M' − New_M_2019|, t DM ha⁻¹",
+            ["MAE", "mean|M' − Revised_M_Roxburgh|, t DM ha⁻¹",
              "typical size of a change without that weighting; the gap to RMSE "
              "says how skewed the changes are"],
             ["Pearson r", "correlation across cells",
              "whether the spatial pattern is preserved. It cannot detect a level "
              "shift, so it is read with bias, never alone"],
-            ["OLS slope", "regression of M' on New_M_2019",
+            ["OLS slope", "regression of M' on Revised_M_Roxburgh",
              "whether the change is proportional. >1 means high-biomass cells "
              "change less in relative terms than low-biomass ones"],
             ["median % change", "median over cells of 100(M'−ref)/ref",
              "the typical cell's fate, robust to the long right tail of M'"],
-            ["% cells declining", "share with M' < New_M_2019",
+            ["% cells declining", "share with M' < Revised_M_Roxburgh",
              "how widespread the change is, independently of its size"],
             ["spatial CV", "sd over cells ÷ mean over cells",
              "how uneven the map is as a whole; rises when the change is "
@@ -534,6 +575,25 @@ def main():
             "variability but cannot invent new variability, so this result is "
             "evidence about the change factors, not an independent finding about "
             "future climate variability.")
+        doc.add_paragraph(
+            "How Figures 6 and 7 are computed. For one scenario-window, the 30 "
+            "annual M' rasters are read and, at every cell, the standard "
+            "deviation across those 30 values is divided by their mean and "
+            "expressed as a percentage. The historical panel is the same "
+            "calculation on the 30 modelled historical years. Figure 6 maps "
+            "those nine layers on one colour scale, set by the typical spread "
+            "rather than the largest tail so that no single panel washes the "
+            "others out; the median of each panel is printed under its title. "
+            "Figure 7 subtracts the historical layer from each future one, so "
+            "its unit is percentage points and its scale is diverging about "
+            "zero: blue means less year-to-year variability than the historical "
+            "period, red more.")
+        doc.add_paragraph(
+            "How to read them. The level is what to notice first in Figure 6 — "
+            "around 45-48% everywhere — and the direction in Figure 7, which is "
+            "negative in all eight panels. White cells in Figure 6 are where the "
+            "30-year mean falls below 1 t DM ha⁻¹ and a ratio stops being "
+            "meaningful, not missing data.")
         figure(doc, "fig_06_cv_interannual.png",
                "Figure 6. Interannual CV of M' in each scenario-window and in the "
                "modelled historical period. One colour scale throughout, set by "
@@ -561,6 +621,14 @@ def main():
             % (float(scen.loc["2035-2064", "median"]),
                float(scen.loc["2070-2099", "median"]),
                float(inter[inter.index != "historical 1985-2014"]["median"].mean())))
+        doc.add_paragraph(
+            "Figure 8 changes what varies. At each cell the four SSP "
+            "window-mean M' values are taken, and their standard deviation is "
+            "divided by their mean — so this is the spread the choice of "
+            "scenario produces, holding the year fixed, while Figure 6 was the "
+            "spread the year produces, holding the scenario fixed. Panel (c) "
+            "places the medians of both side by side, which is the only fair "
+            "way to compare them.")
         figure(doc, "fig_08_cv_across_scenarios.png",
                "Figure 8. Across-scenario CV per window (left, centre) and the "
                "two kinds of variability side by side (right).", folder=COMP_PLOTS)
@@ -576,7 +644,7 @@ def main():
                           "% cells down"], widths=[0.8, 1.0, 0.7, 0.7, 0.7, 0.7, 1.0])
         doc.add_paragraph(
             "r stays between %.3f and %.3f: the spatial pattern of M' is almost "
-            "entirely inherited from New_M_2019, which is what a delta-change "
+            "entirely inherited from Revised_M_Roxburgh, which is what a delta-change "
             "method should produce — the projection rescales the reference rather "
             "than redrawing it. The slope above 1 in most windows says the "
             "rescaling is not uniform: low-biomass cells lose a larger *fraction* "
@@ -586,8 +654,26 @@ def main():
             "high-forcing decline is both deeper and more widespread."
             % (fut["pearson_r"].min(), fut["pearson_r"].max(),
                fut["pct_cells_declining"].min(), fut["pct_cells_declining"].max()))
+        doc.add_paragraph(
+            "Figure 9 is the cell-by-cell comparison. The x axis is Revised_M_Roxburgh "
+            "at a cell, the y axis the future M' at the same cell, and the "
+            "hexagon shading counts cells; the dashed line is 1:1, so anything "
+            "below it loses potential biomass. A delta-change method cannot "
+            "move a cell far off that line, which is why the statistics below "
+            "matter more than the picture: the correlation is high by "
+            "construction and it is the slope and the bias that carry the "
+            "information.")
+        rows = []
+        for _, r in fut_rows.iterrows():
+            rows.append([r["ssp"].replace("ssp", "SSP"), r["window"],
+                         "%.3f" % r["pearson_r"], "%.3f" % r["slope"],
+                         "%+.2f" % r["bias"], "%.1f" % r["rmse"],
+                         "%.0f" % r["pct_cells_declining"]])
+        table(doc, rows, ["scenario", "window", "Pearson r", "OLS slope",
+                          "bias (t DM/ha)", "RMSE", "% cells down"],
+              widths=[0.9, 1.0, 0.9, 0.9, 1.1, 0.7, 1.0])
         figure(doc, "fig_09_scatter_vs_New_M_2019.png",
-               "Figure 9. M' against New_M_2019, one hexbin per scenario-window. "
+               "Figure 9. M' against Revised_M_Roxburgh, one hexbin per scenario-window. "
                "The dashed line is 1:1; cells below it lose biomass. "
                "The cloud tightens around the line at low biomass and fans out "
                "above ~200 t DM ha⁻¹, where a few large movers set the RMSE.",
@@ -610,9 +696,19 @@ def main():
         doc.add_paragraph(
             "This is a carrying-capacity total, not an inventory: M' is what a "
             "site could carry at maturity, not what stands on it today.")
+        doc.add_paragraph(
+            "Figure 10 aggregates. Each cell's M' in t DM ha⁻¹ is multiplied by "
+            "that cell's area in hectares and summed over the NLUM mask, giving "
+            "Mt DM. The area is not constant: cells are 0.01° geographic, so "
+            "their width shrinks with latitude as cos(lat), and ignoring that "
+            "over-weights the south by several per cent. Panel (a) shows the "
+            "totals against the reference line, panel (b) the same as a "
+            "percentage change. This is a carrying-capacity total, not an "
+            "inventory — M' is what a site could carry at maturity, not what "
+            "stands there now.")
         figure(doc, "fig_10a_national_total.png",
                "Figure 10a. National total above-ground biomass by "
-               "scenario-window, against the New_M_2019 reference line.",
+               "scenario-window, against the Revised_M_Roxburgh reference line.",
                folder=COMP_PLOTS)
         figure(doc, "fig_10b_national_total_change.png",
                "Figure 10b. The same as a percentage change. Note the "
@@ -625,17 +721,29 @@ def main():
                         level=2)
         doc.add_paragraph(
             "The interannual and across-scenario CVs above have no counterpart "
-            "in New_M_2019, which is a single static layer. The spatial CV does: "
+            "in Revised_M_Roxburgh, which is a single static layer. The spatial CV does: "
             "sd over cells divided by the mean over cells, one number per map. "
-            "It rises from %.1f%% for New_M_2019 to %.1f-%.1f%% across the eight "
+            "It rises from %.1f%% for Revised_M_Roxburgh to %.1f-%.1f%% across the eight "
             "scenario-windows, so the projection makes the map more uneven rather "
             "than less — the losses are concentrated, not spread evenly, which is "
             "the same thing the decile figure says from the other direction."
             % (float(cmp_df[cmp_df["ssp"] == "New_M_2019"]["spatial_cv_pct"].iloc[0]),
                float(fut_sp.min()), float(fut_sp.max())))
+        doc.add_paragraph(
+            "A note on the name: this report and its figures call the reference "
+            "Revised_M_Roxburgh, the revised maximum biomass layer of Roxburgh "
+            "et al. (2019). The file on disk keeps its released name, "
+            "New_M_2019_NLUM.tif, and the CSV columns keep New_M_2019 as their "
+            "key, so the two names refer to one layer throughout.")
+        doc.add_paragraph(
+            "How Figure 14 is computed: for one layer, the standard deviation "
+            "over all cells divided by the mean over all cells. One number per "
+            "map, so it can be formed for Revised_M_Roxburgh too, which is why this is "
+            "the CV that compares the projection with the reference. Panel (b) "
+            "expresses each as a percentage change against the reference value.")
         figure(doc, "fig_14a_spatial_cv_vs_reference.png",
                "Figure 14a. Spatial CV of each future layer against the "
-               "New_M_2019 reference.", folder=COMP_PLOTS)
+               "Revised_M_Roxburgh reference.", folder=COMP_PLOTS)
         figure(doc, "fig_14b_spatial_cv_change.png",
                "Figure 14b. The same as a change against the reference.",
                folder=COMP_PLOTS)
@@ -645,7 +753,7 @@ def main():
         worst = late.loc[late["pct_change_median"].idxmin()]
         top = late[late["decile"] == 10].iloc[0]
         doc.add_paragraph(
-            "Cells were binned into deciles of New_M_2019 and the median change "
+            "Cells were binned into deciles of Revised_M_Roxburgh and the median change "
             "taken within each. The relative loss is deepest in the low and "
             "middle deciles - under SSP585 2070-2099 it reaches %.0f%% in decile "
             "%d - and shallowest in the top decile, at %.0f%%. In absolute tonnes "
@@ -654,8 +762,19 @@ def main():
             "questions; whichever is quoted, say which one it is."
             % (worst["pct_change_median"], int(worst["decile"]),
                top["pct_change_median"]))
+        doc.add_paragraph(
+            "Figure 11 asks where in the distribution the change falls. Cells "
+            "are sorted by their Revised_M_Roxburgh value and split into ten equal "
+            "groups; within each group the median percentage change is taken. "
+            "Decile 1 is the lowest-biomass tenth of the domain and decile 10 "
+            "the highest. The curve falls and then rises, so the deepest "
+            "relative losses are in the low and middle deciles and the "
+            "shallowest in the top one. In absolute tonnes the ordering "
+            "reverses, because decile 10 holds most of the biomass; that is why "
+            "Figure 10 and Figure 11 can look like they disagree when they do "
+            "not.")
         figure(doc, "fig_11_change_by_decile.png",
-               "Figure 11. Median change in M' by decile of New_M_2019, per "
+               "Figure 11. Median change in M' by decile of Revised_M_Roxburgh, per "
                "scenario and window. Decile 1 is the lowest-biomass tenth of the "
                "domain.", folder=COMP_PLOTS)
 
@@ -672,16 +791,16 @@ def main():
             doc.add_paragraph(
                 "Figure 13 is the headline: the median M' of each scenario-window "
                 "with every component of the ratio modelled by the random forest, "
-                "against the hatched 1985-2014 baseline and the New_M_2019 "
+                "against the hatched 1985-2014 baseline and the Revised_M_Roxburgh "
                 "reference line. The baseline bar sits exactly on the line "
                 "because averaging the modelled historical years returns "
-                "New_M_2019 by construction; every other bar is a projection, and "
+                "Revised_M_Roxburgh by construction; every other bar is a projection, and "
                 "all eight fall below it, from %.1f to %.1f t DM ha⁻¹ against "
                 "%.2f."
                 % (fut_vals.min(), fut_vals.max(), base_mp))
             doc.add_paragraph(
                 "The percentages printed inside the bars are the shift in the "
-                "median — median(M') against median(New_M_2019) — which is not "
+                "median — median(M') against median(Revised_M_Roxburgh) — which is not "
                 "the same statistic as the median of the per-cell changes "
                 "tabulated earlier, because a median is not additive. The first "
                 "answers \"where does the middle of the map sit now\", the second "
@@ -690,7 +809,7 @@ def main():
             figure(doc, "fig_13_rf_mprime_bars.png",
                    "Figure 13. Median M' across land cells for each "
                    "scenario-window, all components from the random forest. "
-                   "Hatched: the 1985-2014 baseline. Dashed: New_M_2019.",
+                   "Hatched: the 1985-2014 baseline. Dashed: Revised_M_Roxburgh.",
                    folder=COMP_PLOTS)
 
             doc.add_heading("The two footings on one axis", level=2)
@@ -699,7 +818,7 @@ def main():
                 "single panel, because they are routinely confused. The orange "
                 "bars are Eq. (1) M used as written; the navy bars are M' on the "
                 "matched footing. The hatched pair on the left is 1985-2014, and "
-                "the dashed line is the median of New_M_2019, %.2f t DM ha⁻¹."
+                "the dashed line is the median of Revised_M_Roxburgh, %.2f t DM ha⁻¹."
                 % base_mp)
             doc.add_paragraph(
                 "Read it vertically and the orange-to-navy gap is the footing: "
@@ -715,7 +834,7 @@ def main():
             figure(doc, "fig_12_paired_bars.png",
                    "Figure 12. Median M across land cells: Eq. (1) M and matched-"
                    "footing M' for each scenario-window, against the 1985-2014 "
-                   "baseline (hatched) and the New_M_2019 reference (dashed). "
+                   "baseline (hatched) and the Revised_M_Roxburgh reference (dashed). "
                    "Quoting an orange bar where a navy one belongs inflates M by "
                    "roughly %.0f%%." % (100 * (base_eq1 / base_mp - 1)),
                    folder=COMP_PLOTS)

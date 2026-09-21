@@ -170,8 +170,8 @@ def main():
         "evidence of a problem, while M' below the observation cannot be "
         "explained by immaturity and is the stronger signal.", style="Intense Quote")
     doc.add_paragraph(
-        "There is also a circularity to name. λ is DCCEEW's New_M_2019 ÷ "
-        "Original_M_2004, and New_M_2019 is itself the output of a random forest "
+        "There is also a circularity to name. λ is DCCEEW's Revised_M_Roxburgh ÷ "
+        "Original_M_2004, and Revised_M_Roxburgh is itself the output of a random forest "
         "fitted to NBL plots. Sites in that fit are not independent of M', so "
         "this is a consistency check on the transport of a climate signal, not "
         "an independent validation of the level. The present-day control below "
@@ -415,7 +415,7 @@ def main():
             "historical denominator. This report validates the one built as the "
             "%s; the other is built as the %s. Eq. (1) is convex, so the two are "
             "not the same layer — at the M level the gap is about 3%%, and "
-            "against New_M_2019 it is the difference between ×0.944 and ×0.991. "
+            "against Revised_M_Roxburgh it is the difference between ×0.944 and ×0.991. "
             "The question here is whether it changes the validation."
             % (this_order, that_order))
 
@@ -441,14 +441,14 @@ def main():
             "Jensen gap enters the numerator and the denominator in the same "
             "direction, so once both sides of the ratio are built in the same "
             "order it very largely cancels. The averaging order therefore still "
-            "matters for the headline change against New_M_2019 — where only the "
+            "matters for the headline change against Revised_M_Roxburgh — where only the "
             "numerator carries it — but it does not move this validation at all, "
             "and no conclusion here rests on the choice."
             % fmt(worst, "%.2f%%"))
         doc.add_paragraph(
             "The controls are identical for a structural reason, not a "
             "coincidence: averaged over the 30 historical years, both orders "
-            "collapse to λ × Original_M_2004, which is New_M_2019. The present-"
+            "collapse to λ × Original_M_2004, which is Revised_M_Roxburgh. The present-"
             "day gate cannot distinguish them.")
 
     doc.add_heading("By maturity class", level=2)
@@ -517,7 +517,7 @@ def main():
         "library records stands of unknown age, so some over-prediction is "
         "built in. Under-prediction is the finding that would matter.",
         "The absolute level is anchored, not tested. λ × Original_M_2004 is "
-        "New_M_2019, which came from a random forest fitted to NBL plots, so "
+        "Revised_M_Roxburgh, which came from a random forest fitted to NBL plots, so "
         "agreement in level is partly circular. What is genuinely tested here "
         "is whether the projected climate change moves M' in a way consistent "
         "with the biomass observed under comparable climates today.",

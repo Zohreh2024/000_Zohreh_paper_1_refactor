@@ -160,8 +160,8 @@ def fig_cv_interannual():
     cb.outline.set_visible(False)
     cb.ax.tick_params(labelsize=8, length=2)
 
-    fig.suptitle("Year-to-year variability of M' within each 30-year window, and "
-                 "in the modelled historical period", fontsize=11, color=INK_2)
+    fig.suptitle("Interannual CV of M', by scenario-window",
+                 fontsize=11, color=INK_2)
     dst = PLOT_DIR / "fig_06_cv_interannual.png"
     fig.savefig(dst, dpi=190, bbox_inches="tight")
     plt.close(fig)
@@ -193,8 +193,8 @@ def fig_cv_change():
     cb.outline.set_visible(False)
     cb.ax.tick_params(labelsize=8, length=2)
 
-    fig.suptitle("Does M' become more variable from year to year? "
-                 "Future CV minus the modelled historical CV", fontsize=11, color=INK_2)
+    fig.suptitle("Change in interannual CV against the historical period",
+                 fontsize=11, color=INK_2)
     dst = PLOT_DIR / "fig_07_cv_change.png"
     fig.savefig(dst, dpi=190, bbox_inches="tight")
     plt.close(fig)
@@ -247,10 +247,10 @@ def fig_cv_scenarios():
     ax.set_yticklabels(names, fontsize=9)
     ax.set_xlabel("median CV (%)")
     ax.set_xlim(0, max(vals) * 1.25)
-    ax.set_title("Which uncertainty is larger?", loc="left")
+    ax.set_title("c) Median CV by kind", loc="left")
 
-    fig.suptitle("Disagreement between scenarios, against year-to-year variability "
-                 "within one scenario", fontsize=11, color=INK_2)
+    fig.suptitle("Across-scenario CV of M'",
+                 fontsize=11, color=INK_2)
     dst = PLOT_DIR / "fig_08_cv_across_scenarios.png"
     fig.savefig(dst, dpi=190, bbox_inches="tight")
     plt.close(fig)
@@ -287,23 +287,16 @@ def fig_scatter():
             ax.plot([0, hi], [0, hi], color=INK_MUTED, lw=1.2, ls="--")
             ax.set_xlim(0, hi)
             ax.set_ylim(0, hi)
-            row = df.loc[(ssp, win)]
             ax.set_title("%s  %s" % (label(ssp), win), loc="left")
-            ax.text(0.04, 0.93,
-                    "r %.3f\nslope %.3f\nbias %+.1f\nRMSE %.1f"
-                    % (row["pearson_r"], row["slope"], row["bias"], row["rmse"]),
-                    transform=ax.transAxes, va="top", fontsize=8.5, color=INK_2,
-                    linespacing=1.35)
             tidy(ax)
 
     for ax in axes[1]:
-        ax.set_xlabel("New_M_2019 (t DM ha$^{-1}$)")
+        ax.set_xlabel("Revised_M_Roxburgh (t DM ha$^{-1}$)")
     for ax in axes[:, 0]:
         ax.set_ylabel("future M' (t DM ha$^{-1}$)")
 
-    fig.suptitle("Future M' against New_M_2019, cell by cell. Points below the "
-                 "dashed 1:1 line are cells that lose biomass", fontsize=11,
-                 color=INK_2)
+    fig.suptitle("Future M' against Revised_M_Roxburgh, cell by cell",
+                 fontsize=11, color=INK_2)
     fig.tight_layout()
     dst = PLOT_DIR / "fig_09_scatter_vs_New_M_2019.png"
     fig.savefig(dst, dpi=180, bbox_inches="tight")
@@ -337,13 +330,13 @@ def fig_totals():
             ax1.text(p, v - ref * 0.03, label(ssp), ha="center", va="top",
                      fontsize=8, color="white")
     ax1.axhline(ref, color=INK, lw=1.4, ls="--", zorder=3)
-    ax1.text(-0.42, ref + ref * 0.015, "New_M_2019  %.0f Mt DM" % ref,
+    ax1.text(-0.42, ref + ref * 0.015, "Revised_M_Roxburgh  %.0f Mt DM" % ref,
              va="bottom", ha="left", fontsize=9, color=INK)
     ax1.set_xticks(x)
     ax1.set_xticklabels(WINDOWS)
     ax1.set_ylabel("national total above-ground biomass (Mt DM)")
     ax1.set_ylim(0, max(d["total_Mt_DM"].max(), ref) * 1.12)
-    ax1.set_title("a) Area-weighted national total", loc="left")
+    ax1.set_title("a) National total above-ground biomass", loc="left")
     tidy(ax1, grid_axis="y")
 
     for ssp in SSPS:
@@ -356,8 +349,8 @@ def fig_totals():
     ax2.set_xticks(x)
     ax2.set_xticklabels(WINDOWS)
     ax2.set_xlim(-0.25, len(WINDOWS) - 0.45)
-    ax2.set_ylabel("change in the national total (%)")
-    ax2.set_title("b) Change against New_M_2019", loc="left")
+    ax2.set_ylabel("change in the national total against Revised_M_Roxburgh (%)")
+    ax2.set_title("b) Change against Revised_M_Roxburgh", loc="left")
     tidy(ax2, grid_axis="y")
 
     out = []
@@ -390,7 +383,7 @@ def fig_decile():
         ax.axhline(0, color=INK_MUTED, lw=1.1)
         ax.set_xticks(range(1, 11))
         ax.set_xlim(0.6, 10.4)
-        ax.set_xlabel("decile of New_M_2019 (1 = lowest biomass)")
+        ax.set_xlabel("decile of Revised_M_Roxburgh (1 = lowest biomass)")
         ax.set_title(win, loc="left")
         tidy(ax, grid_axis="y")
     # A legend rather than end-of-line labels: the four lines converge in the
@@ -398,8 +391,7 @@ def fig_decile():
     axes[0].legend(fontsize=9, loc="lower right", ncol=2)
     axes[0].set_ylabel("median change in M' (%)")
 
-    fig.suptitle("Where the change sits: in relative terms the loss is deepest in "
-                 "the low- and mid-biomass deciles, shallowest in the top decile",
+    fig.suptitle("Median change in M' by decile of Revised_M_Roxburgh",
                  fontsize=11, color=INK_2)
     fig.tight_layout()
     dst = PLOT_DIR / "fig_11_change_by_decile.png"
@@ -442,19 +434,18 @@ def fig_cv_vs_reference():
     # Below the line and hard right: above it the annotation lands on the
     # first bar's value label.
     ax.text(len(WINDOWS) - 0.52, ref - ref * 0.035,
-            "New_M_2019  %.1f%%" % ref, va="top", ha="right", fontsize=9,
-            color=INK)
+            "Revised_M_Roxburgh  %.1f%%" % ref, va="top", ha="right",
+            fontsize=9, color=INK)
     ax.set_xticks(x)
     ax.set_xticklabels(WINDOWS)
     ax.set_ylabel("spatial CV of the layer (%)")
     ax.set_ylim(0, max(d["spatial_cv_pct"].max(), ref) * 1.18)
-    ax.set_title("a) Spatial CV: future M′ against the reference layer",
-                 loc="left")
+    ax.set_title("a) Spatial CV by scenario-window", loc="left")
     ax.legend(fontsize=9, ncol=4, loc="upper left", bbox_to_anchor=(0, 0.93))
     tidy(ax, grid_axis="y")
 
-    fig.suptitle("How uneven the map is, and how the projection changes that",
-                 fontsize=11, color=INK_2)
+    fig.suptitle("Coefficient of variation over cells: future M against "
+                 "Revised_M_Roxburgh", fontsize=11, color=INK_2)
     fig.tight_layout()
     dst = PLOT_DIR / "fig_14a_spatial_cv_vs_reference.png"
     fig.savefig(dst, dpi=190)
@@ -474,8 +465,8 @@ def fig_cv_vs_reference():
     ax.set_xticks(x)
     ax.set_xticklabels(WINDOWS)
     ax.set_xlim(-0.25, len(WINDOWS) - 0.45)
-    ax.set_ylabel("change in spatial CV against New_M_2019 (%)")
-    ax.set_title("b) The projection makes the map more uneven, not less",
+    ax.set_ylabel("change in spatial CV against Revised_M_Roxburgh (%)")
+    ax.set_title("b) Change in spatial CV against Revised_M_Roxburgh",
                  loc="left")
     tidy(ax, grid_axis="y")
     fig.tight_layout()

@@ -177,7 +177,7 @@ def plot_rf_only(df, ref, stat, groups):
                 ha="center", va="top", fontsize=9, color="white", zorder=4)
 
     ax.axhline(ref, color=REF_C, lw=1.8, ls="--", zorder=1,
-               label="New_M_2019 reference, %.2f t DM ha$^{-1}$" % ref)
+               label="Revised_M_Roxburgh reference, %.2f t DM ha$^{-1}$" % ref)
     ax.axvline(0.5, color=GRID_C, lw=1.4, zorder=0)
 
     ax.set_xticks(x)
@@ -254,7 +254,7 @@ def main():
                     path_effects=[pe.withStroke(linewidth=3.2, foreground=SURFACE)])
 
     ax.axhline(ref, color=REF_C, lw=1.8, ls="--", zorder=1,
-               label="New_M_2019 reference, %.2f" % ref)
+               label="Revised_M_Roxburgh reference, %.2f" % ref)
     ax.axvline(0.5, color=GRID_C, lw=1.4, zorder=0)
 
     ax.set_xticks(x)

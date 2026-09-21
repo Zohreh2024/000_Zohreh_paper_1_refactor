@@ -354,8 +354,8 @@ def fig_mprime_change(valid):
     figs = [plt.subplots(figsize=(7.4, 4.9)) for _ in range(2)]
     axes = [a for _, a in figs]
     titles = {
-        "eq1_of_mean": "a) M′ = New_M_2019 x Eq1(mean FPI$_{future}$) $\div$ Eq1(mean FPI$_{1985-2014}$)",
-        "mean_of_annual": "b) M′ = New_M_2019 x mean$_y$[Eq1(FPI$_y$)] $\div$ mean$_y$[Eq1(FPI$_y$, hist)]",
+        "eq1_of_mean": "a) M′ = Revised_M_Roxburgh x Eq1(mean FPI$_{future}$) $\div$ Eq1(mean FPI$_{1985-2014}$)",
+        "mean_of_annual": "b) M′ = Revised_M_Roxburgh x mean$_y$[Eq1(FPI$_y$)] $\div$ mean$_y$[Eq1(FPI$_y$, hist)]",
     }
     for ax, order in zip(axes, ["eq1_of_mean", "mean_of_annual"]):
         d = df[df["averaging_order"] == order].sort_values(["window", "ssp"])
@@ -381,9 +381,9 @@ def fig_mprime_change(valid):
     for (fig, ax), name in zip(figs, ["fig_04a_mprime_change_method",
                                       "fig_04b_mprime_change_sensitivity"]):
         ax.set_ylim(lo - 4.5, hi)
-        ax.set_ylabel("median change in M′ against New_M_2019 (%)")
+        ax.set_ylabel("median change in M′ against Revised_M_Roxburgh (%)")
         ax.legend(loc="lower left", fontsize=9)
-        fig.suptitle("Change in future M′ against New_M_2019",
+        fig.suptitle("Change in future M′ against Revised_M_Roxburgh",
                      fontsize=11, color=INK_2, y=1.0)
         fig.tight_layout()
         dst = PLOT_DIR / (name + ".png")
@@ -423,11 +423,11 @@ def fig_change_maps():
 
     if im is not None:
         cb = fig.colorbar(im, ax=axes, fraction=0.022, pad=0.015, extend="both")
-        cb.set_label("change in M' against New_M_2019 (%)", fontsize=9)
+        cb.set_label("change in M' against Revised_M_Roxburgh (%)", fontsize=9)
         cb.outline.set_visible(False)
         cb.ax.tick_params(labelsize=8, length=2)
 
-    fig.suptitle("Change in M' against New_M_2019, per cell",
+    fig.suptitle("Change in M' against Revised_M_Roxburgh, per cell",
                  fontsize=11, color=INK_2)
     dst = PLOT_DIR / "fig_05_mprime_change_maps.png"
     fig.savefig(dst, dpi=190, bbox_inches="tight")
