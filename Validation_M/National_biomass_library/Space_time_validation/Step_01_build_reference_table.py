@@ -33,6 +33,21 @@ runs standalone, and every step's survivor count is written to
                                        a gradient produced by plot size alone
   biomass <= 1500 Mg/ha                the residue above that is small-plot
                                        artefact and data error
+  AGB >= 1 Mg per m2 of live basal      the stand's own basal area is a lower
+  area                                  bound on the biomass it carries. A stand
+                                       cannot hold less than about 1 Mg/ha of
+                                       AGB per m2/ha of basal area - that is a
+                                       5 m stand of balsa. The library's median
+                                       is 7.8. Two sources fail it wholesale:
+                                       TERN Australia (median 0.08, n=51) and
+                                       CSIRO (0.21, n=19), whose `Giants` plot
+                                       reports 0.60 Mg/ha against 108 m2/ha of
+                                       live basal area and a 403 cm stem. Those
+                                       are corrupt biomass fields, not cleared
+                                       stands, and they were the source of the
+                                       near-zero "mature" sites. Disable with
+                                       `--keep-inconsistent-agb` to reproduce
+                                       the earlier sample.
 
 Maturity comes from the tree-level table, not from the site table, which carries
 no age or disturbance field:
@@ -100,6 +115,7 @@ PRODUCTION = ["Forestry Corporation Commercial Estate (NSW)", "Forestry Tasmania
 PLANTED_PROJECTS = ["Environmental Plantings"]
 MIN_AREA_HA = 0.05
 MAX_AGB = 1500.0
+MIN_AGB_PER_BA = 1.0      # Mg of AGB per m2 of live basal area
 MATURITY_SETS = {
     "mature": ["verified mature", "likely mature"],
     "verified": ["verified mature"],
@@ -107,7 +123,7 @@ MATURITY_SETS = {
 }
 
 
-def load_sites():
+def load_sites(keep_inconsistent=False):
     d = pd.read_csv(SITES, low_memory=False)
     trail = [("all site visits", len(d))]
 
@@ -134,23 +150,39 @@ def load_sites():
     keep &= agb <= MAX_AGB
     trail.append(("biomass at most %d Mg/ha" % MAX_AGB, int(keep.sum())))
 
+    with np.errstate(invalid="ignore", divide="ignore"):
+        agb_per_ba = agb / ba
+    if not keep_inconsistent:
+        keep &= agb_per_ba >= MIN_AGB_PER_BA
+        trail.append(("AGB at least %.1f Mg per m2 of basal area"
+                      % MIN_AGB_PER_BA, int(keep.sum())))
+
     d = d[keep].copy()
     d["agb"] = agb[keep]
     d["year"] = yr[keep]
     d["area_ha"] = area[keep]
+    d["live_ba"] = ba[keep]
+    d["agb_per_ba"] = agb_per_ba[keep]
     return d, trail
 
 
 def add_maturity(d):
-    """Largest stem at the site, from the tree-level table."""
-    t = pd.read_csv(TREES, low_memory=False, usecols=["site", "diameter"])
+    """Largest stem of THIS survey, from the tree-level table.
+
+    Joined on `obs_key`, the survey event, not on `site`. The site name is not
+    unique: 1,444 names carry more than one survey (up to 19) and 197 are shared
+    across different data sources, so a join on the name pools stems measured on
+    other visits - or other agencies' plots of the same name - into this record.
+    That produced stands of 3 Mg/ha carrying a 104 cm stem.
+    """
+    t = pd.read_csv(TREES, low_memory=False, usecols=["obs_key", "diameter"])
     dia = pd.to_numeric(t["diameter"], errors="coerce")
     t = t.assign(diameter=dia).dropna(subset=["diameter"])
-    g = t.groupby("site")["diameter"].agg(
+    g = t.groupby("obs_key")["diameter"].agg(
         max_dbh="max", n_stems="size",
         n_over30=lambda v: int((v >= 30).sum()),
         n_over50=lambda v: int((v >= 50).sum()))
-    d = d.merge(g, on="site", how="left")
+    d = d.merge(g, on="obs_key", how="left")
 
     def klass(r):
         if not np.isfinite(r.max_dbh):
@@ -173,6 +205,8 @@ def to_sites(d):
                source=("source", "first"), project=("project", "first"),
                area_ha=("area_ha", "max"), maturity=("maturity", "first"),
                max_dbh=("max_dbh", "first"), n_stems=("n_stems", "first"),
+               live_ba=("live_ba", "first"),
+               agb_per_ba=("agb_per_ba", "first"),
                n_visits=("agb", "size"))
     return d.groupby("site").agg(**agg).reset_index()
 
@@ -241,6 +275,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--maturity", choices=list(MATURITY_SETS), default="mature",
                     help="which maturity classes the reference table keeps")
+    ap.add_argument("--keep-inconsistent-agb", action="store_true",
+                    help="skip the AGB-vs-basal-area consistency filter and "
+                         "write reference_table_noqc.csv instead; this "
+                         "reproduces the sample used before September 2026")
     ap.add_argument("--keep-all-classes", action="store_true",
                     help="write every class, with a `maturity` column to filter on")
     args = ap.parse_args()
@@ -248,7 +286,7 @@ def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     print("filtering the library")
-    d, trail = load_sites()
+    d, trail = load_sites(args.keep_inconsistent_agb)
     d = add_maturity(d)
     d = to_sites(d)
     trail.append(("one row per site (maximum measurement)", len(d)))
@@ -266,7 +304,8 @@ def main():
     for step, n in trail:
         print("  %-46s %6d" % (step, n))
     pd.DataFrame(trail, columns=["step", "sites"]).to_csv(
-        OUT_DIR / "filter_trail.csv", index=False)
+        OUT_DIR / ("filter_trail_noqc.csv" if args.keep_inconsistent_agb
+                   else "filter_trail.csv"), index=False)
 
     print("soil, 83 bands")
     soil = attach_soil(d)
@@ -275,7 +314,8 @@ def main():
 
     meta = d[["site", "x", "y", "longitude", "latitude", "row", "col", "agb",
               "M_hist", "fpi_hist", "maturity", "max_dbh", "n_stems", "year",
-              "area_ha", "n_visits", "source", "project"]].reset_index(drop=True)
+              "area_ha", "n_visits", "source", "project",
+              "live_ba", "agb_per_ba"]].reset_index(drop=True)
     table = pd.concat([meta, soil.reset_index(drop=True),
                        clim.reset_index(drop=True)], axis=1)
 
@@ -285,7 +325,9 @@ def main():
         print("  dropped %d site(s) with an incomplete predictor row"
               % (before - len(table)))
 
-    dst = OUT_DIR / "reference_table.csv"
+    dst = OUT_DIR / ("reference_table_noqc.csv"
+                     if args.keep_inconsistent_agb
+                     else "reference_table.csv")
     table.to_csv(dst, index=False)
 
     summary = table.groupby("maturity").agg(
@@ -294,7 +336,9 @@ def main():
         agb_p95=("agb", lambda v: float(np.percentile(v, 95))),
         M_hist_median=("M_hist", "median"),
         fpi_median=("fpi_hist", "median")).reset_index()
-    summary.to_csv(OUT_DIR / "reference_table_summary.csv", index=False)
+    summary.to_csv(OUT_DIR / ("reference_table_summary_noqc.csv"
+                              if args.keep_inconsistent_agb
+                              else "reference_table_summary.csv"), index=False)
 
     print("\n%s\n%d sites, %d columns" % (dst, len(table), table.shape[1]))
     print(summary.to_string(index=False, float_format=lambda v: "%.2f" % v))

@@ -106,6 +106,11 @@ def main():
     ref_sum = pd.read_csv(OUT_DIR / "reference_table_summary.csv")
     matches = pd.read_csv(OUT_DIR / ("matches%s.csv" % args.suffix))
     na = pd.read_csv(OUT_DIR / ("no_analogue_summary%s.csv" % args.suffix))
+    pp = OUT_DIR / ("paired_log_ratio%s.csv" % args.suffix)
+    paired = pd.read_csv(pp) if pp.exists() else None
+    rp = OUT_DIR / ("metrics_by_run_reduced%s.csv"
+                    % args.suffix.replace("_climate_only", ""))
+    reduced = pd.read_csv(rp) if rp.exists() else None
 
     found = runs[runs["stratum"] == "analogue found"].set_index("run")
     gate = found.loc["same_cell_present_day"]
@@ -210,6 +215,49 @@ def main():
                 for _, r in ref_sum.iterrows()],
           ["maturity class", "sites", "median AGB (Mg/ha)",
            "median M' today", "median FPI"], widths=[1.5, 0.8, 1.5, 1.4, 1.1])
+    doc.add_heading("Two filters that decide the sample", level=2)
+    doc.add_paragraph(
+        "Maturity is joined to the site record on obs_key, the survey event, "
+        "and not on the site name. The name is not unique: 1,444 names in the "
+        "library carry more than one survey, up to nineteen, and 197 are shared "
+        "between different data sources. A join on the name therefore pools "
+        "stems measured on other visits, or by another agency at another place "
+        "of the same name, into the record being classified. On this sample it "
+        "changes the class of only one site in 2,120, so it is a correctness "
+        "fix rather than a result, but it is the join a reader should assume.")
+    doc.add_paragraph(
+        "The second filter does change the result. A stand cannot carry less "
+        "biomass than its own basal area implies: the library's median is 7.8 "
+        "Mg of above-ground biomass per square metre of live basal area, and "
+        "anything below about 1 would be a five-metre stand of balsa. Two "
+        "sources fail that wholesale - TERN Australia at a median of 0.08 over "
+        "51 sites, and CSIRO at 0.21 over 19. The TERN plot named Giants "
+        "reports 0.60 Mg/ha of biomass against 108 square metres per hectare of "
+        "live basal area and a 403 cm stem. These are corrupt biomass fields, "
+        "not cleared or burnt stands, and they were the whole of the puzzle of "
+        "near-zero mature sites: of the 53 mature sites under 5 Mg/ha, the "
+        "median largest stem was 104 cm. Records below 1 Mg per square metre "
+        "are dropped, and Step_01 writes the untouched sample to "
+        "reference_table_noqc.csv so the effect can be measured rather than "
+        "asserted.")
+    doc.add_paragraph(
+        "Dropping them removes 88 of 688 mature sites and moves every number "
+        "that follows:")
+    table(doc,
+          [["mature sites", "688", "600"],
+           ["median observed AGB (Mg/ha)", "83.0", "112.4"],
+           ["median ratio, site's own cell today", "0.611", "0.494"],
+           ["Spearman rho, site's own cell today", "0.070", "0.418"],
+           ["Spearman rho, SSP126 2035-2064", "0.036", "0.274"]],
+          ["", "before the filter", "after"], widths=[2.8, 1.5, 1.2])
+    doc.add_paragraph(
+        "The ratio moves away from 1 and the rank correlation improves roughly "
+        "sixfold. Both are the same fact: the discarded records contributed "
+        "biomass values unrelated to the stands they described, which depressed "
+        "the observed median and added pure noise to the ranking. The cleaned "
+        "numbers are worse-looking on the ratio and far better on the "
+        "correlation, and the correlation is the one that measures skill.")
+
     doc.add_paragraph(
         "Figure 1 shows the sample the whole test rests on. Panel (a) plots "
         "each surviving site at its longitude and latitude, coloured by "
@@ -386,14 +434,29 @@ def main():
            "factor of two and RMSE on the panel. Right: the distribution of the "
            "ratio, cut at 6 with the number of sites beyond it stated.")
 
-    doc.add_heading("Controls", level=2)
+    doc.add_heading("Controls, and which null is the fair one", level=2)
     doc.add_paragraph(
         "Three runs bracket what the method can do before any future is "
         "involved. Matching a site to a present-day analogue gives a median "
-        "ratio of %s — this is the matching method's own error, and the future "
-        "runs should be read against it rather than against 1. Random cells give "
-        "%s, which is the floor any real skill has to beat."
-        % (fmt(hist_ctl["median_ratio"]), fmt(rand["median_ratio"])))
+        "ratio of %s with Spearman rho %s - that is the matching method's own "
+        "error, and the future runs should be read against it rather than "
+        "against 1. The null is random cells drawn under the same NVIS "
+        "constraint: %s and rho %s."
+        % (fmt(hist_ctl["median_ratio"]), fmt(hist_ctl["spearman_rho"]),
+           fmt(rand["median_ratio"]), fmt(rand["spearman_rho"])))
+    doc.add_paragraph(
+        "The constraint on the null is not a detail. Drawing the random cells "
+        "without it gives a ratio near 0.21 and rho near 0.03, against which "
+        "the analogue search looks decisive - but almost all of that gap is the "
+        "vegetation constraint doing its work, not the climate matching. A "
+        "random cell anywhere in Australia is usually the wrong vegetation type "
+        "entirely, and beating it demonstrates nothing. Quoted honestly, the "
+        "analogue search improves on its fair null from rho %s to about %s and "
+        "from a ratio of %s to about %s: a real gain, and a modest one. The "
+        "unconstrained figure is reported in this folder for completeness and "
+        "should not be used as evidence of skill."
+        % (fmt(rand["spearman_rho"]), fmt(fut["spearman_rho"].median()),
+           fmt(rand["median_ratio"]), fmt(fut["median_ratio"].median())))
 
     doc.add_heading("The eight scenario-windows", level=2)
     rows = []
@@ -465,6 +528,100 @@ def main():
            "correlation between the distance to the analogue and the ratio, "
            "which is the question it asks.")
 
+    # ------------------------------------------------------------------ #
+    if paired is not None and not paired.empty:
+        doc.add_heading("Each site against itself", level=2)
+        doc.add_paragraph(
+            "The ratios above are unpaired: they compare the biomass observed "
+            "at one set of sites with the M' found at a different set of cells, "
+            "so they mix how well M' tracks biomass with which vegetation types "
+            "happen to sit in the sample. Dividing each site's matched M' by "
+            "its OWN present-day M' removes that. The observed biomass cancels "
+            "exactly out of the arithmetic - the quantity is M' at the analogue "
+            "over M' at the site - so every site is its own control and the "
+            "vegetation-type composition of the sample cannot influence the "
+            "answer.")
+        doc.add_paragraph(
+            "Two baselines are reported and they answer different questions. "
+            "Against the site's own present-day cell, the comparison carries "
+            "everything the analogue changed: the search procedure and the "
+            "projected climate together. Against the site's present-day "
+            "analogue, the search procedure is held fixed and only the climate "
+            "moves, which isolates the projected change. Confidence intervals "
+            "are the 2.5th and 97.5th percentiles of 2,000 bootstrap medians, "
+            "and the p-value is a Wilcoxon signed-rank test on the paired "
+            "differences. With 600 pairs that test detects differences far "
+            "smaller than matter, so read the interval first and the p-value "
+            "last.")
+        hp = paired[paired["baseline"] == "historical_analogue"].set_index("run")
+        rows = []
+        for win in WINDOWS:
+            for ssp in SSPS:
+                k = "%s_%s" % (ssp, win)
+                if k not in hp.index:
+                    continue
+                r = hp.loc[k]
+                nf = float(na.set_index("run")["pct"].get(k, float("nan")))
+                rows.append([label_run(k), fmt(r["median_ratio"], "%.3f"),
+                             "%s to %s" % (fmt(10 ** r["lo"], "%.3f"),
+                                           fmt(10 ** r["hi"], "%.3f")),
+                             fmt(r["pct_sites_lower"], "%.0f") + "%",
+                             fmt(nf, "%.0f") + "%"])
+        table(doc, rows,
+              ["scenario-window", "M' ratio, paired", "95% interval",
+               "sites lower", "no analogue"], widths=[1.7, 1.2, 1.4, 0.9, 0.9])
+        doc.add_paragraph(
+            "Read the last column with the first. Where most sites still have "
+            "an analogue - every mid-century window, and SSP126 late - the "
+            "paired change is a decline of 2.5 to 6.9 per cent, consistent and "
+            "small. Where the analogue pool has collapsed, the same statistic "
+            "reverses and reports a RISE of 12 to 28 per cent. That reversal is "
+            "not a projected gain in productivity. It is selection: when 90 or "
+            "98 per cent of sites have no analogue, the few that remain are the "
+            "cells whose climate still exists somewhere in the future domain, "
+            "which are the wetter and more productive ones. The statistic is "
+            "then computed on a sample that no longer represents the reference "
+            "set.")
+        figure(doc, "fig_07_paired_change.png",
+               "Figure 7. Paired per-site change in M', each site its own "
+               "control. Points are the median ratio with a 95% bootstrap "
+               "interval; the shaded band marks the runs where most sites have "
+               "no analogue left and the survivors are a biased remnant.")
+
+        doc.add_heading("Which runs are results, and which are not", level=2)
+        doc.add_paragraph(
+            "Three of the eight scenario-windows should not be quoted as "
+            "findings. Of 600 sites, SSP370 2070-2099 retains %d with an "
+            "analogue, SSP585 2070-2099 retains %d, and SSP245 2070-2099 "
+            "retains %d. Below roughly a hundred sites the metrics are "
+            "unstable from run to run, and the surviving sample is "
+            "systematically wetter than the reference set, so both the level "
+            "and the direction of the change are unreliable. The five "
+            "remaining windows - all four mid-century, and SSP126 "
+            "late-century - carry 82 to 92 per cent of their sites and are the "
+            "ones that support a statement."
+            % (int(found.loc["ssp370_2070-2099", "n"]),
+               int(found.loc["ssp585_2070-2099", "n"]),
+               int(found.loc["ssp245_2070-2099", "n"])))
+        doc.add_paragraph(
+            "The no-analogue fractions are themselves a result, and arguably "
+            "the most important one in this report. They say that by the end of "
+            "the century under high forcing, the climate projected for most of "
+            "these forested sites does not occur anywhere in present-day "
+            "Australia. M' at those locations is therefore an extrapolation "
+            "beyond anything the observational record can constrain - the "
+            "random forest is predicting FPI for climates it never saw, and no "
+            "amount of validation against present-day biomass can test that. "
+            "This is a property of the projection, not a defect of the matching "
+            "procedure, and it applies equally to the FullCAM inputs built from "
+            "the same layers.")
+        table(doc,
+              [[label_run(r["run"]), int(r["sum"]), fmt(r["pct"], "%.1f") + "%"]
+               for _, r in na.iterrows() if str(r["run"]).startswith("ssp")],
+              ["scenario-window", "sites with no analogue", "share"],
+              widths=[2.0, 1.6, 1.0])
+
+    # ------------------------------------------------------------------ #
     unc_path = OUT_DIR / ("metrics_by_run%s.csv" % unconstrained_suffix)
     if "_nvis" in args.suffix and unc_path.exists():
         unc = pd.read_csv(unc_path)
@@ -587,15 +744,92 @@ def main():
                "reported."))
 
     # ------------------------------------------------------------------ #
+    sp_path = OUT_DIR / ("matching_space%s.csv" % args.suffix)
+    doc.add_heading("What the match is actually computed on", level=2)
+    if sp_path.exists():
+        sp = pd.read_csv(sp_path).iloc[0]
+        doc.add_paragraph(
+            "The match uses all %d predictors the random forest itself uses, "
+            "but not in their raw form: they are standardised on the historical "
+            "land cells and then projected onto the %d principal components "
+            "that carry %s per cent of the historical variance. That step "
+            "matters more than it looks. A nearest neighbour found in a very "
+            "high-dimensional space is only nominally the nearest, because as "
+            "dimension grows the spread of pairwise distances shrinks relative "
+            "to their mean until every candidate sits at about the same "
+            "distance and the winner is decided by noise. The relative "
+            "contrast - the median site's typical candidate distance minus its "
+            "nearest, over its nearest - measures that directly. Here it is "
+            "%s, so the nearest cell is genuinely much nearer than a typical "
+            "one and the match means what it says."
+            % (int(sp["n_features"]), int(sp["n_components"]),
+               fmt(sp["variance_pct"], "%.0f"),
+               fmt(sp["relative_contrast"], "%.1f")))
+    if reduced is not None and not reduced.empty:
+        rf = reduced[(reduced["stratum"] == "analogue found")
+                     & (~reduced["run"].isin(CONTROLS))]
+        rsp = OUT_DIR / ("matching_space_reduced%s.csv"
+                         % args.suffix.replace("_climate_only", ""))
+        extra = ""
+        if rsp.exists():
+            r2 = pd.read_csv(rsp).iloc[0]
+            extra = (" Its relative contrast is %s, against %s for the full "
+                     "set - no better, which is the point: the concentration "
+                     "the reduced set was meant to avoid is not happening in "
+                     "the full one either."
+                     % (fmt(r2["relative_contrast"], "%.1f"),
+                        fmt(pd.read_csv(sp_path).iloc[0]["relative_contrast"],
+                            "%.1f") if sp_path.exists() else "n/a"))
+        doc.add_paragraph(
+            "As a check on that, the whole match was repeated on a deliberately "
+            "small set: the seven annual climate means and one slice of each of "
+            "nine soil properties, sixteen columns instead of %d. It gives a "
+            "median ratio of %s to %s across the eight runs against %s to %s "
+            "for the full set, and it places the analogues further away on the "
+            "ground.%s The full predictor set is kept."
+            % (int(pd.read_csv(sp_path).iloc[0]["n_features"])
+               if sp_path.exists() else 174,
+               fmt(rf["median_ratio"].min()), fmt(rf["median_ratio"].max()),
+               fmt(fut["median_ratio"].min()), fmt(fut["median_ratio"].max()),
+               extra))
+
+    # ------------------------------------------------------------------ #
+    doc.add_heading("Reconciling with the earlier bin validation", level=2)
+    doc.add_paragraph(
+        "An earlier validation in the parent folder reported a median ratio of "
+        "1.55 on 254 verified-mature stands, against 0.49 here. Neither is "
+        "wrong; they are different quantities, and the difference decomposes "
+        "cleanly on the same sites:")
+    table(doc,
+          [["published Level 2 figure (verified mature, Eq. (1) footing)", "1.55"],
+           ["reproduced here on the same footing and stratum", "1.47"],
+           ["retire the Eq. (1) footing, use New_M_2019", "0.95"],
+           ["widen from verified-only to verified + likely mature", "0.61"],
+           ["apply the AGB-versus-basal-area filter", "0.49"]],
+          ["step", "median ratio"], widths=[4.6, 1.2])
+    doc.add_paragraph(
+        "The single largest term is the footing. The earlier number was "
+        "computed against a historical M' built on Eq. (1) applied directly, "
+        "which overstates the Richards and Brack layer FullCAM ships by about "
+        "46 per cent; retiring that footing multiplies the ratio by 0.64 on its "
+        "own and was a deliberate decision, not a change of result. Widening "
+        "the maturity stratum contributes a further 0.65, because likely-mature "
+        "stands sit on less productive land, and the data-quality filter "
+        "contributes the "
+        "remaining 0.81 by raising the observed median. The residual between "
+        "1.55 and the 1.47 reproduced here is the earlier run's per-cell rather "
+        "than per-site aggregation and its missing planted-project filter.")
+
+    # ------------------------------------------------------------------ #
     doc.add_heading("What to conclude, and what not to", level=1)
     doc.add_paragraph(
         "The honest headline is that the present-day gate does not pass. At the "
-        "site's own cell, M' is %s times the observed biomass at the median and "
-        "ranks the sites barely better than chance (Spearman ρ %s against %s "
-        "for random cells; R² in logs is negative). Everything downstream "
-        "inherits that, so the eight scenario-window numbers below should be "
-        "read as a description of how the matching behaves, not as evidence "
-        "that M' predicts biomass at a point."
+        "site's own cell, M' is %s times the observed biomass at the median - "
+        "it under-predicts by about half - and ranks the sites only modestly "
+        "better than a constrained random draw (Spearman ρ %s against %s; R² in "
+        "logs is negative). Everything downstream inherits that, so the eight "
+        "scenario-window numbers should be read as a description of how the "
+        "matching behaves, not as evidence that M' predicts biomass at a point."
         % (fmt(gate["median_ratio"]), fmt(gate["spearman_rho"]),
            fmt(rand["spearman_rho"])), style="Intense Quote")
     doc.add_paragraph(
@@ -628,6 +862,21 @@ def main():
         "is that the random control becomes nearly as good as the climate "
         "matching. Report the null alongside every ratio; a ratio quoted on its "
         "own from this test would overstate what it demonstrates.",
+        "The sample is geographically narrow. The surviving sites cluster in "
+        "eastern Queensland and New South Wales, with smaller groups in "
+        "Tasmania and the south-west; the arid interior, the tropical north "
+        "and most of South Australia are effectively unsampled. Every ratio "
+        "and correlation in this report is therefore a statement about wet and "
+        "sub-humid eastern forest, and carries no weight over the rangelands "
+        "that make up most of the NLUM mask by area.",
+        "The southward displacement is a sanity check that passes. The "
+        "analogues move consistently poleward and the median displacement "
+        "grows with forcing, from about 36 km under SSP126 mid-century to "
+        "several hundred kilometres under the late-century high-forcing runs. "
+        "That is the direction and the ordering a warming climate should "
+        "produce, and it is evidence the matching is finding real climate "
+        "structure rather than noise - independent of whether the M' it "
+        "retrieves agrees with the biomass.",
         "Riparian and floodplain sites are unfiltered — the library has no field "
         "for them — so a residue of sites whose biomass is supported by water "
         "the climate does not explain remains in the sample.",

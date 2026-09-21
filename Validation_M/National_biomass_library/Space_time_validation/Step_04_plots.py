@@ -377,6 +377,68 @@ def fig_displacement(matches, run="ssp585_2070-2099"):
     return dst
 
 
+def fig_paired(paired, na):
+    """Each site against itself, so the vegetation type cancels.
+
+    The unpaired ratios in fig_05 mix two things - how well M' tracks biomass,
+    and which vegetation types happen to sit in the sample. Dividing each site's
+    future M' by its OWN present-day M' removes both, and the observed biomass
+    cancels out of the arithmetic entirely.
+    """
+    if paired is None or paired.empty:
+        return None
+    have = set(paired["run"])
+    order = ["%s_%s" % (a, w) for w in WINDOWS for a in SSPS
+             if "%s_%s" % (a, w) in have]
+    x = np.arange(len(order))
+    fig, ax = plt.subplots(figsize=(11.0, 5.0))
+    tidy(ax, grid_axis="y")
+
+    series = [("same_cell_present_day", "vs the site's own present-day cell",
+               C_MATURE, -0.11),
+              ("historical_analogue", "vs its present-day analogue",
+               C_LIKELY, 0.11)]
+    for base, lab, colour, dx in series:
+        d = paired[paired["baseline"] == base].set_index("run").reindex(order)
+        lo = 10 ** d["lo"].to_numpy()
+        hi = 10 ** d["hi"].to_numpy()
+        mid = d["median_ratio"].to_numpy()
+        ax.errorbar(x + dx, mid, yerr=[mid - lo, hi - mid], fmt="o",
+                    ms=8, lw=2.0, capsize=4, color=colour, label=lab,
+                    markeredgecolor=SURFACE, markeredgewidth=1.2, zorder=4)
+
+    ax.axhline(1.0, color=INK_2, lw=1.2, ls="--", zorder=2)
+    ax.text(-0.45, 1.0, "no change", va="bottom", ha="left", fontsize=8.5,
+            color=INK_2)
+
+    # Where most sites have no analogue left, the survivors are not a sample of
+    # the reference set - they are the few cells whose climate still exists
+    # somewhere, which are the wetter and more productive ones. The apparent
+    # RISE in M' under the late-century high-forcing runs is that selection, not
+    # a projected gain, and the band says so on the figure rather than in a
+    # footnote.
+    frac = na.set_index("run")["pct"].reindex(order).to_numpy()
+    thin = np.flatnonzero(frac > 50)
+    if thin.size:
+        ax.axvspan(thin[0] - 0.5, len(order) - 0.5, color="#f2ede4", zorder=0)
+        ax.text((thin[0] - 0.5 + len(order) - 0.5) / 2, ax.get_ylim()[1],
+                "most sites have no analogue left -\n"
+                "the survivors are the wettest cells, not a sample",
+                ha="center", va="top", fontsize=8.5, color=INK_2)
+    ax.set_xticks(x)
+    ax.set_xticklabels(["%s\n%.0f%% no analogue" % (label_run(r), f)
+                        for r, f in zip(order, frac)], fontsize=8.5)
+    ax.set_ylabel("M' at the analogue  /  M' at the site itself")
+    ax.set_title("Paired per-site change in M', each site its own control",
+                 loc="left")
+    ax.legend(fontsize=9, loc="upper left", frameon=False)
+    fig.tight_layout()
+    dst = out_path("fig_07_paired_change")
+    fig.savefig(dst, dpi=190)
+    plt.close(fig)
+    return dst
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--suffix", default="", help="'_climate_only' for that variant")
@@ -389,6 +451,8 @@ def main():
     matches = pd.read_csv(OUT_DIR / ("matches%s.csv" % args.suffix))
     runs = pd.read_csv(OUT_DIR / ("metrics_by_run%s.csv" % args.suffix))
     na = pd.read_csv(OUT_DIR / ("no_analogue_summary%s.csv" % args.suffix))
+    pp = OUT_DIR / ("paired_log_ratio%s.csv" % args.suffix)
+    paired = pd.read_csv(pp) if pp.exists() else None
 
     ref = ref[ref["site"].isin(matches["site"].unique())]
 
@@ -396,7 +460,8 @@ def main():
                     (fig_match_quality, (matches, na)),
                     (fig_obs_vs_matched, (matches, runs)),
                     (fig_ratio_by_run, (runs,)),
-                    (fig_displacement, (matches,))]:
+                    (fig_displacement, (matches,)),
+                    (fig_paired, (paired, na))]:
         out = fn(*arg)
         print("  -> %s" % (out.name if out else "skipped"))
 
