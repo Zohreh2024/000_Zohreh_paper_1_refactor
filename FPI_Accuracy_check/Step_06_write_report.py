@@ -28,6 +28,7 @@ COMP_DIR = HERE / "Comparison_vs_New_M_2019"
 COMP_OUT = COMP_DIR / "output"
 COMP_PLOTS = COMP_DIR / "plots"
 REPORT = HERE / "FPI_modelled_reference_report.docx"
+RF_CV = HERE.parent / "Random_forest_CSIRO" / "data" / "cv_metrics.csv"
 
 INK_2 = RGBColor(0x52, 0x51, 0x4E)
 
@@ -258,6 +259,82 @@ def main():
     doc.add_paragraph(
         "Comparing a future projection against observed history would be neither of "
         "these: that is a trend comparison, and the two are not supposed to agree.")
+
+    # ------------------------------------------------------------------ #
+    # The three cross-validation schemes, as a single summary table. The
+    # numbers come from the random forest's own Step_03, which writes an
+    # out-of-fold prediction for EVERY row under each scheme - each row
+    # predicted once, by the fold that did not train on it - so all three
+    # columns are computed on the same 2,086,920 cell-years and are directly
+    # comparable.
+    if RF_CV.exists():
+        cv = pd.read_csv(RF_CV)
+        cv = cv[cv["fold"].astype(str) == "all"].set_index("scheme")
+        order = [("kfold_random", "random k-fold"),
+                 ("blockcv_space", "spatial block CV"),
+                 ("groupcv_year", "year-group CV")]
+        order = [(k, lab) for k, lab in order if k in cv.index]
+        if order:
+            doc.add_heading("Cross-validation under three schemes", level=2)
+            doc.add_paragraph(
+                "The out-of-fold row above is one of three schemes the random "
+                "forest was cross-validated under. All three hold out five "
+                "folds and predict every one of the 2,086,920 cell-years "
+                "exactly once, by the fold that did not train on it, so the "
+                "three columns are computed on the same data and differ only "
+                "in what is held out.")
+            for t in [
+                "Random k-fold holds out scattered cell-years. It is the "
+                "conventional number and the optimistic one: at 1 km FPI is "
+                "strongly autocorrelated in space and in time, so almost every "
+                "held-out row is ringed by its own neighbours in the training "
+                "set.",
+                "Spatial block CV holds out contiguous 2-degree blocks, and "
+                "asks whether the model can predict a region it has never "
+                "seen. Contiguous blocks rather than scattered cells, for the "
+                "reason above.",
+                "Year-group CV holds out whole years, and asks whether the "
+                "model can predict a year it has never seen. That is exactly "
+                "the act of projecting 2035-2099, so this is the column to "
+                "quote as the accuracy of the modelled FPI.",
+            ]:
+                doc.add_paragraph(t, style="List Bullet")
+
+            HOLDS_OUT = {"kfold_random": "scattered cell-years",
+                         "blockcv_space": "contiguous 2\u00b0 blocks",
+                         "groupcv_year": "whole years"}
+
+            def _v(k, key, spec="%.3f"):
+                return (spec % cv.loc[k, key]
+                        if key in cv.columns and pd.notna(cv.loc[k, key])
+                        else "\u2014")
+
+            rows = [[lab, HOLDS_OUT.get(k, ""), _v(k, "r2"),
+                     _v(k, "pearson_r"), _v(k, "rmse"), _v(k, "mae"),
+                     _v(k, "bias", "%+.4f")] for k, lab in order]
+            table(doc, rows,
+                  ["validation scheme", "holds out", "R\u00b2", "r", "RMSE",
+                   "MAE", "bias"],
+                  widths=[1.3, 1.3, 0.7, 0.7, 0.7, 0.7, 0.8])
+            caption(doc,
+                    "Table. Accuracy of the modelled historical FPI "
+                    "(1985-2014) under three cross-validation schemes. RMSE, "
+                    "MAE and bias are in FPI units; each scheme is computed on "
+                    "all %s cell-years. Quote the year-group row."
+                    % format(int(cv.iloc[0]["n"]), ","))
+
+            if {"kfold_random", "groupcv_year"} <= set(cv.index):
+                doc.add_paragraph(
+                    "Read the three together rather than separately. The gap "
+                    "between random k-fold and the other two is the size of "
+                    "the leak a random split allows, not a defect of the "
+                    "model, and the fact that the spatial and temporal schemes "
+                    "land so close to each other says the model is about "
+                    "equally transferable in space and in time. Bias stays "
+                    "below %.2f%% of the observed mean under every scheme, so "
+                    "nothing here shifts the level of the ratio M' is built "
+                    "from."
+                    % max(abs(cv.loc[k, "pbias"]) for k, _ in order))
 
     doc.add_paragraph(
         "Figure 1a plots the random forest's FPI against the observed DCCEEW FPI. "
