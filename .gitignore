@@ -133,6 +133,12 @@ Validation_M/National_biomass_library/Space_time_validation/logs/
 
 
 # --------------------------------------------------------------------------- #
+# The National Biomass Library download. biolib_treelist.csv is 154 MB,
+# over GitHub's hard limit, and both files are an unmodified third-party
+# download - fetched, not produced here. See NBL_download/README.md.
+Validation_M/National_biomass_library/NBL_download/
+Validation_M/National_biomass_library/NBL_previousdownload/
+
 # Re-inclusions - MUST stay last
 # --------------------------------------------------------------------------- #
 # gitignore is last-match-wins, so a negation only survives if nothing below it

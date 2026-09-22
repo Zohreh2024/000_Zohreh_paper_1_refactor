@@ -1,4 +1,4 @@
-# Roxbrugh_validation/
+# Roxburgh_validation/
 
 Roxburgh et al. (2019) validated his revised maximum-biomass layer `M′` against
 the National Biomass Library with a specific protocol. This folder transplants
@@ -30,7 +30,7 @@ over 1972–2016, and the **custodian-by-custodian disturbance metadata**
 ## Running it
 
 ```powershell
-cd Validation_M\National_biomass_library\Roxbrugh_validation
+cd Validation_M\National_biomass_library\Roxburgh_validation
 conda run --no-capture-output -p "C:\ProgramData\Anaconda3\envs\JinzhuLuto" python Step_01_build_records.py
 conda run --no-capture-output -p "C:\ProgramData\Anaconda3\envs\JinzhuLuto" python Step_02_fit_statistics.py
 conda run --no-capture-output -p "C:\ProgramData\Anaconda3\envs\JinzhuLuto" python Step_03_sample_sensitivity.py
@@ -228,5 +228,5 @@ outputs/plot_area_bands.csv
 outputs/ks_tests.csv                     his Fig. 6b
 outputs/means_by_state_class.csv         his Fig. 8
 outputs/spatial_autocorrelation.csv      his Sec. 2.4
-Roxbrugh_validation_report.docx
+Roxburgh_validation_report.docx
 ```

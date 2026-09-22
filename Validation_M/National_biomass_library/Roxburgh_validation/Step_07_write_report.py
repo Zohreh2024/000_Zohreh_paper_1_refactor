@@ -128,7 +128,7 @@ def main():
     doc.add_heading("Validating future M the way Roxburgh et al. (2019) "
                     "validated M'", 0)
     p = doc.add_paragraph()
-    r = p.add_run("Validation_M/National_biomass_library/Roxbrugh_validation · "
+    r = p.add_run("Validation_M/National_biomass_library/Roxburgh_validation · "
                   "generated %s · the eight future M' layers, every component "
                   "of the ratio produced by the random forest, scored against "
                   "the National Biomass Library with the paper's own protocol"
@@ -581,7 +581,7 @@ def main():
         ["plots/fig_01..07", "the figures in this report"],
     ], ["file", "what it holds"], widths=[2.4, 3.6])
 
-    dst = HERE / ("Roxbrugh_validation_report%s.docx" % suf)
+    dst = HERE / ("Roxburgh_validation_report%s.docx" % suf)
     doc.save(str(dst))
     print("wrote %s" % dst)
 
