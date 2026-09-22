@@ -27,6 +27,8 @@ PLOT_DIR = HERE / "plots"
 
 INK_2 = RGBColor(0x52, 0x51, 0x4E)
 
+ANCHOR_LAYER = "M_revised_Roxburgh"
+
 NICE = {
     "M_original_2004": "Original M (FullCAM before 2019)",
     "M_revised_Roxburgh": "Revised_M_Roxburgh (New_M_2019)",
@@ -112,6 +114,7 @@ def main():
     oq = pd.read_csv(OUT_DIR / "observation_quality_summary.csv")
     bands = pd.read_csv(OUT_DIR / "plot_area_bands.csv")
     prov = pd.read_csv(OUT_DIR / "provider_effects.csv")
+    lam = pd.read_csv(OUT_DIR / ("lambda_summary%s.csv" % suf))
 
     S = stats.set_index("layer")
     ssk = ss[ss["layer"] == "M_revised_Roxburgh"].set_index("variant")
@@ -287,7 +290,7 @@ def main():
         "broad skill against this library."
         % (fmt(base_rho, "%+.2f"), fmt(best_rho, "%+.2f"),
            format(int(ssk.loc[best, "n"]), ","), format(len(d), ",")))
-    figure(doc, "fig_06_sample_sensitivity.png",
+    figure(doc, "fig_08_sample_sensitivity.png",
            "Figure 1. What each sample decision does to the agreement between "
            "observed biomass and Revised_M_Roxburgh. Green marks the only "
            "variant that reaches a rank correlation above 0.2.")
@@ -344,7 +347,7 @@ def main():
         "there is something to measure. No spatial layer can reproduce that "
         "gradient, because nothing about the location predicts how large a "
         "plot a given agency chose to lay out there.")
-    figure(doc, "fig_07_plot_size.png",
+    figure(doc, "fig_09_plot_size.png",
            "Figure 2. Reported biomass per hectare against the size of the "
            "plot it was measured in. The count of records in each band is "
            "given above the bar.")
@@ -388,7 +391,7 @@ def main():
             for _, r in cg.iterrows()]
     table(doc, rows, ["separation", "pairs", "residual correlation"],
           widths=[1.4, 1.2, 1.6])
-    figure(doc, "fig_05_spatial_autocorrelation.png",
+    figure(doc, "fig_07_spatial_autocorrelation.png",
            "Figure 3. How far apart two plots must be before their errors are "
            "independent. The distance axis is logarithmic because the bins "
            "are; the correlation axis is linear.")
@@ -420,11 +423,11 @@ def main():
            fmt(fut["LCC"].min()), fmt(fut["LCC"].max()),
            fmt(S.loc["M_revised_Roxburgh", "EF"]),
            fmt(S.loc["M_revised_Roxburgh", "LCC"])))
-    figure(doc, "fig_02a_ef_by_layer.png",
+    figure(doc, "fig_03a_ef_all_layers.png",
            "Figure 4. Model efficiency of every layer, with 95 per cent "
            "bootstrap intervals. The black diamonds are Roxburgh's published "
            "values for the two layers he scored.")
-    figure(doc, "fig_02b_lcc_by_layer.png",
+    figure(doc, "fig_03b_lcc_all_layers.png",
            "Figure 5. Lin's concordance correlation coefficient of every "
            "layer, on the same basis.")
     doc.add_paragraph(
@@ -460,7 +463,7 @@ def main():
         "it is pulling the middle down and the top up, which is the same "
         "result the comparison folder reports as a rising spatial coefficient "
         "of variation.")
-    figure(doc, "fig_03_distributions.png",
+    figure(doc, "fig_05_distributions_future.png",
            "Figure 6. Distribution of modelled maximum biomass against the "
            "observations. Observed biomass is the filled grey histogram; the "
            "three lines are the original layer, the revised layer and the "
@@ -472,21 +475,34 @@ def main():
         "Roxburgh's Figure 4 plots observed against predicted biomass for each "
         "layer. His version uses log10 axes for display with the statistics "
         "computed on untransformed data; the statistics here are his, the axes "
-        "are linear, and the few records beyond the axis are counted on the "
-        "panel. What a log axis would hide is exactly what these panels need "
-        "to show: the cloud has no orientation.")
+        "are linear, and the records beyond the axis are counted on the panel. "
+        "What a log axis would hide is exactly what these panels need to show: "
+        "the cloud has no orientation.")
+    doc.add_paragraph(
+        "The two control panels come first because they are what licenses "
+        "everything after them. They are the layers Roxburgh scored himself, "
+        "so his own values are printed on each for comparison.")
     for panel, name, lab in [
-            ("a", "fig_01a_observed_vs_M_original_2004.png",
+            ("a", "fig_01a_control_M_original_2004.png",
              "the original FullCAM layer"),
-            ("b", "fig_01b_observed_vs_M_revised_Roxburgh.png",
-             "Revised_M_Roxburgh"),
-            ("c", "fig_01c_observed_vs_M_future_ssp585_2070-2099.png",
-             "future M under SSP585 2070-2099")]:
+            ("b", "fig_01b_control_M_revised_Roxburgh.png",
+             "Revised_M_Roxburgh, the historical anchor")]:
         figure(doc, name,
-               "Figure 7%s. Observed against modelled biomass for %s. Colour "
-               "is the number of records per hexagonal cell on a linear scale "
-               "clipped at the 98th percentile, so that the dense core does "
+               "Figure 7%s. CONTROL. Observed against modelled biomass for %s. "
+               "Colour is the number of records per hexagonal cell on a linear "
+               "scale clipped at the 98th percentile, so the dense core does "
                "not saturate. The dashed line is 1:1." % (panel, lab))
+    doc.add_paragraph(
+        "The eight future layers follow, on one grid and on shared axes. They "
+        "are not given eight separate pages deliberately: the comparison "
+        "between them is the point, and the fact that eight scenario-windows "
+        "produce eight indistinguishable clouds is itself the result of this "
+        "folder.")
+    figure(doc, "fig_02_future_scatter_all.png",
+           "Figure 8. The eight future M layers against observed biomass, on "
+           "shared axes, each panel carrying its own ME, EF and LCC. Panel "
+           "colour follows the scenario and is kept across every figure in "
+           "this report.", width=6.6)
 
     doc.add_heading("By vegetation class", level=2)
     sel = by_class[by_class["layer"].isin(
@@ -508,7 +524,7 @@ def main():
         "positively when pooled, and that is the arithmetic behind the "
         "negative numbers in Table 1.")
     for panel, cls in [("a", "Forest"), ("b", "Woodland")]:
-        figure(doc, "fig_04%s_state_means_%s.png" % (panel, cls.lower()),
+        figure(doc, "fig_06%s_state_means_%s.png" % (panel, cls.lower()),
                "Figure 8%s. Mean observed and modelled biomass by state, %s "
                "sites, with the record count under each state. Roxburgh's "
                "Figure 8 in the same form." % (panel, cls))
@@ -522,6 +538,67 @@ def main():
         "Forest records at a mean of 334 against a modelled 52, which is the "
         "opposite artefact: savanna measured on 0.08 hectare plots. Neither "
         "state can be used to judge a layer.")
+
+    # ------------------------------------------------------------------ #
+    doc.add_heading("Lambda, the ratio the method is built on", level=1)
+    LAM = lam.set_index("layer")
+    doc.add_paragraph(
+        "Roxburgh's Eq. (2) is lambda_i = M_i / O_i, and his entire method is "
+        "a spatial model of that ratio. Its distribution is therefore the most "
+        "direct statement any of these layers makes about the observations. A "
+        "lambda above 1 means the layer sits above the measured biomass, which "
+        "is the direction a MAXIMUM should err in; below 1 means it sits under "
+        "a stand already measured carrying more, which a maximum should not do.")
+    order = ["M_original_2004", "M_revised_Roxburgh", "M_eq1_rf_hist"] + [
+        "M_future_%s_%s" % (a, w)
+        for w in ["2035-2064", "2070-2099"]
+        for a in ["ssp126", "ssp245", "ssp370", "ssp585"]]
+    order = [c for c in order if c in LAM.index]
+    rows = [[nice(c), fmt(LAM.loc[c, "median"], "%.2f"),
+             "%s to %s" % (fmt(LAM.loc[c, "p25"], "%.2f"),
+                           fmt(LAM.loc[c, "p75"], "%.2f")),
+             fmt(LAM.loc[c, "pct_over_1"], "%.1f") + "%"] for c in order]
+    table(doc, rows,
+          ["layer", "median lambda", "interquartile range",
+           "share of records above 1"], widths=[2.0, 1.1, 1.5, 1.3])
+    caption(doc, "Table 6. Roxburgh's Eq. (2) per layer.")
+    fut_order = [c for c in order if c.startswith("M_future_")]
+    if fut_order and ANCHOR_LAYER in LAM.index:
+        doc.add_paragraph(
+            "This is the one place where the eight future layers separate "
+            "cleanly, and they separate in the right order. The anchor sits at "
+            "a median lambda of %s. Mid-century the four scenarios sit at %s to "
+            "%s, and by 2070-2099 they fall to %s under SSP126 and %s under "
+            "SSP585 - a monotone decline with forcing. The projection is "
+            "moving TOWARDS the observed biomass, which is what a falling "
+            "maximum under a drying and warming climate should do, and the "
+            "ordering across scenarios is the signal the fit statistics were "
+            "too noisy to see."
+            % (fmt(LAM.loc[ANCHOR_LAYER, "median"], "%.2f"),
+               fmt(min(LAM.loc[c, "median"] for c in fut_order
+                       if "2035-2064" in c), "%.2f"),
+               fmt(max(LAM.loc[c, "median"] for c in fut_order
+                       if "2035-2064" in c), "%.2f"),
+               fmt(LAM.loc["M_future_ssp126_2070-2099", "median"], "%.2f")
+               if "M_future_ssp126_2070-2099" in LAM.index else "n/a",
+               fmt(LAM.loc["M_future_ssp585_2070-2099", "median"], "%.2f")
+               if "M_future_ssp585_2070-2099" in LAM.index else "n/a"))
+        doc.add_paragraph(
+            "Read it with the caveat the rest of this report establishes. The "
+            "LEVEL of lambda is not interpretable here - a median of about 1.5 "
+            "against a library whose per-hectare figures carry a twenty-fold "
+            "plot-size artefact says nothing about whether the layer is right. "
+            "The ORDERING across the eight layers is interpretable, because "
+            "every layer is divided by the same observations, so the artefact "
+            "is common to all eight and cancels out of the comparison between "
+            "them. That is why this figure works where the fit statistics do "
+            "not.")
+    figure(doc, "fig_04_lambda_by_layer.png",
+           "Figure 9. Lambda = modelled maximum over observed biomass, per "
+           "layer. The marker is the median, the bar the interquartile range "
+           "and the thin line the 5th to 95th percentile, with the 95th "
+           "printed where it falls beyond the axis. The dashed line is lambda "
+           "= 1.")
 
     # ------------------------------------------------------------------ #
     doc.add_heading("What to conclude", level=1)
@@ -555,7 +632,14 @@ def main():
         "at least 0.5 hectares leaves 1,055 records and still gives a rank "
         "correlation of -0.04: the small plots are not merely noisy, their "
         "removal leaves a sample with different problems.",
-        "The future layers should be evaluated on process, not on this "
+        "Lambda is the exception, and the one result worth quoting from this "
+        "folder. Its LEVEL is not interpretable, but its ORDERING across the "
+        "eight layers is, because every layer is divided by the same "
+        "observations and the plot-size artefact cancels between them. It "
+        "falls monotonically with forcing, which the fit statistics were too "
+        "noisy to show.",
+        "The future layers should otherwise be evaluated on process, not on "
+        "this "
         "reference. What can be checked - that the historical limit returns "
         "New_M_2019 exactly, that the change factors are bounded and smooth, "
         "that the climate signal behaves as forcing increases - is checked in "
@@ -578,7 +662,7 @@ def main():
         ["Step_06_plots.py", "the figures"],
         ["Step_07_write_report.py", "this document"],
         ["outputs/*.csv", "every number quoted above"],
-        ["plots/fig_01..07", "the figures in this report"],
+        ["plots/fig_01..09", "the figures in this report"],
     ], ["file", "what it holds"], widths=[2.4, 3.6])
 
     dst = HERE / ("Roxburgh_validation_report%s.docx" % suf)

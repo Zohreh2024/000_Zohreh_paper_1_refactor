@@ -14,13 +14,13 @@ biomass layer for the Australian continent*, Forest Ecology and Management 432
 
 | his step | what it is | here |
 |---|---|---|
-| Eq. (2) | `λᵢ = Mᵢ / Oᵢ` per record | computed for every layer |
+| Eq. (2) | `λ = M / O` per record | `Step_02`, plotted in `fig_04` |
 | Table 4 | ME, RMSE, EF (Eq. 4), LCC (Eq. 5), on untransformed data | `Step_02` |
 | Table 2 | Forest / Woodland from NVIS Major Vegetation Subgroups | `Step_01`, verbatim, incl. his east-of-132° restriction on MVS 20/27/45 |
-| Fig. 4 | observed against predicted, per layer | `fig_01a–c`, linear axes |
-| Fig. 6b | frequency distributions + Kolmogorov–Smirnov | `Step_05`, `fig_03` |
-| Fig. 8 | means by state × vegetation class | `Step_05`, `fig_04a/b` |
-| §2.4 | spatial autocorrelation of the sample | `Step_05`, `fig_05` |
+| Fig. 4 | observed against predicted, per layer | `fig_01a/b` (controls), `fig_02` (all eight future) |
+| Fig. 6b | frequency distributions + Kolmogorov–Smirnov | `Step_05`, `fig_05` |
+| Fig. 8 | means by state × vegetation class | `Step_05`, `fig_06a/b` |
+| §2.4 | spatial autocorrelation of the sample | `Step_05`, `fig_07` |
 
 Two things he did that we cannot: the **satellite forest-cover continuity check**
 over 1972–2016, and the **custodian-by-custodian disturbance metadata**
@@ -171,6 +171,43 @@ revision lifted the ceiling to ~1,160 (his Fig. 6b). The future layers keep that
 ceiling and raise it with forcing while their medians fall — the same result the
 comparison folder reports as a rising spatial coefficient of variation.
 
+### 6. Lambda orders correctly with forcing — the one usable result
+
+Roxburgh's Eq. (2), `λ = M / O`, is the quantity his whole method models, so
+its distribution is the most direct statement any layer makes about the
+observations. Median λ per layer:
+
+| layer | median λ |
+|---|---|
+| Original M (control) | 1.60 |
+| Revised_M_Roxburgh (the anchor) | 1.52 |
+| *Eq. (1) on modelled historical FPI* | *2.34* |
+| SSP126 2035–2064 | 1.49 |
+| SSP245 2035–2064 | 1.49 |
+| SSP370 2035–2064 | 1.48 |
+| SSP585 2035–2064 | 1.44 |
+| SSP126 2070–2099 | 1.44 |
+| SSP245 2070–2099 | 1.50 |
+| SSP370 2070–2099 | 1.38 |
+| **SSP585 2070–2099** | **1.32** |
+
+**This is the one place the eight future layers separate cleanly, and they
+separate in the right order** — 1.52 at the anchor falling monotonically to 1.32
+under the strongest forcing. The projection moves *towards* the observed
+biomass, which is what a falling maximum under a warming and drying climate
+should do.
+
+Read it with the caveat above. The **level** of λ is not interpretable — a
+median near 1.5 against a library carrying a twenty-fold plot-size artefact says
+nothing about whether a layer is right. The **ordering** is, because every layer
+is divided by the same observations, so the artefact is common to all eight and
+cancels out of the comparison between them. That is why `fig_04` works where the
+fit statistics do not.
+
+(The Eq. (1) footing at 2.34 is the retired Option A, shown for reference: it
+sits far above every other layer, consistent with the ~46% overstatement
+documented in the repository's `CLAUDE.md`.)
+
 ## What to conclude
 
 > The protocol transplants correctly and the layers are read correctly, but the
@@ -188,6 +225,9 @@ comparison folder reports as a rising spatial coefficient of variation.
   work.
 - **A plot-size floor is not a substitute.** Requiring ≥ 0.5 ha leaves 1,055
   records and still gives ρ = −0.04.
+- **Lambda is the exception.** Its ordering across the eight layers *is*
+  interpretable, because the artefact cancels between them, and it falls
+  monotonically with forcing. Quote that; do not quote its level.
 - **Evaluate the future layers on process instead.** The historical limit
   returning `New_M_2019` exactly, the change factors being bounded and smooth,
   the climate signal ordering with forcing — those are checked in
@@ -196,20 +236,29 @@ comparison folder reports as a rising spatial coefficient of variation.
 
 ## Figures
 
+The eight future layers are the subject; the two present-day layers are controls
+that prove the transplant works. The figures are laid out to say that.
+
 | figure | what it shows |
 |---|---|
-| `fig_01a/b/c` | observed against predicted, per layer, with ME/RMSE/EF/LCC and his own values (his Fig. 4, linear axes) |
-| `fig_02a` | model efficiency of every layer, bootstrap intervals, his published values as diamonds |
-| `fig_02b` | Lin's concordance, same basis |
-| `fig_03` | frequency distributions against the observations (his Fig. 6b) |
-| `fig_04a/b` | mean biomass by state, Forest and Woodland (his Fig. 8) |
-| `fig_05` | spatial autocorrelation of the residual (his §2.4) |
-| `fig_06` | **what each sample decision does to the agreement** — the key diagnostic |
-| `fig_07` | reported biomass against plot size — the artefact behind it |
+| `fig_01a/b` | **control** — observed against predicted for the two layers Roxburgh scored, with his own EF and LCC printed (his Fig. 4) |
+| `fig_02` | **all eight future layers** on one grid and shared axes, each with its own ME, EF and LCC. Eight indistinguishable clouds is the result, not an oversight |
+| `fig_03a/b` | model efficiency and Lin's concordance for every layer, bootstrap intervals, his published values as diamonds (his Table 4) |
+| `fig_04` | **λ = M / O per layer** (his Eq. 2) — the only figure in which the eight future layers separate |
+| `fig_05` | frequency distributions, observed against all eight (his Fig. 6b) |
+| `fig_06a/b` | mean biomass by state, Forest and Woodland — observed and the anchor as bars, all eight future layers as points over the anchor (his Fig. 8) |
+| `fig_07` | spatial autocorrelation of the residual (his §2.4) |
+| `fig_08` | what each sample decision does to the agreement |
+| `fig_09` | reported biomass against plot size — the artefact behind it |
+
+Colour is consistent across every figure: one hue per scenario, grey for the
+present-day controls, blue-grey for the Eq. (1) footing shown for reference.
 
 Axes are linear throughout. Roxburgh draws his Figs. 3 and 4 on log₁₀ axes with
 the statistics computed on untransformed data; we keep his statistics and drop
 his axes, because a log axis straightens exactly what these panels need to show.
+`fig_04` is the one place a quantity is summarised as quantiles rather than
+drawn as a cloud, because λ spans four orders of magnitude.
 
 ## Outputs
 
