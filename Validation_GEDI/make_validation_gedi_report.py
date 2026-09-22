@@ -111,8 +111,36 @@ def cv_total(d, scheme):
     return c.iloc[0]
 
 
+def _require_option_a(d):
+    """This report is built around the Option A / Option B comparison.
+
+    That footing was retired in September 2026 and Step_05 no longer scores it
+    by default, so the analysis tables this report reads no longer carry it.
+    Nothing has been deleted - `Step_05_analyse_vs_M.py --legacy-option-a`
+    puts the layer back and regenerates every table below.
+    """
+    if "baseline_M_1985-2014" in set(d["overall"].layer):
+        return
+    raise SystemExit(
+        "\n".join([
+            "This report covers the present-day layers and the Option A /",
+            "Option B footing comparison, which was retired in September 2026.",
+            "The analysis tables no longer carry baseline_M_1985-2014, so the",
+            "report cannot be built as it stands.",
+            "",
+            "  To regenerate it anyway:",
+            "      python Step_05_analyse_vs_M.py --legacy-option-a",
+            "      python make_validation_gedi_report.py",
+            "",
+            "  For the current validation of the FUTURE M' layers, see",
+            "      Validation_GEDI_future_M_report.docx",
+            "  built by Step_06_write_future_M_report.py.",
+        ]))
+
+
 def main():
     d = load()
+    _require_option_a(d)
     fp = d["fp"]
     new_u, base_u = ov(d, "New_M_2019"), ov(d, "baseline_M_1985-2014")
     new_a, base_a = ov(d, "New_M_2019", "all"), ov(d, "baseline_M_1985-2014", "all")

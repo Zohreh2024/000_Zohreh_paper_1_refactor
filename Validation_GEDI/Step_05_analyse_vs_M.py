@@ -1,16 +1,36 @@
 """
-Step 5 - compare GEDI cell statistics against both present-day M' layers.
+Step 5 - compare GEDI cell statistics against the future M' layers.
 
-Reads the four Step 4 tables
+Reads the Step 4 and Step 4b tables
 
-    outputs/gedi_cells_{all,unburnt}_New_M_2019.csv
-    outputs/gedi_cells_{all,unburnt}_baseline_M_1985-2014.csv
+    outputs/gedi_cells_{all,unburnt}_New_M_2019.csv          the anchor
+    outputs/gedi_cells_{all,unburnt}_future_<ssp>_<window>.csv    the eight
 
 plus outputs/gedi_l4a_footprints.parquet (for forest type and footprint
 error), and writes the tables and figures the report is built from:
 
     outputs/analysis/*.csv
     outputs/figures/*.png
+
+## The subject and the control
+
+The subject is the eight FUTURE M' layers, every component of the ratio
+produced by the random forest. New_M_2019 is the control: it is the historical
+limit of all eight by construction, since
+
+    M'_future = New_M_2019 x Eq1(mean FPI_future) / Eq1(mean FPI_1985-2014)
+
+collapses to New_M_2019 when the future FPI equals the historical one. Any
+difference between a future layer's numbers and the anchor's is therefore the
+projected climate change and nothing else - no footing change, no change of
+observational base, no change in the GEDI sample, which is identical for every
+layer.
+
+The Eq. (1)-footing layer (baseline_M_1985-2014, the retired Option A) was
+dropped in September 2026 along with the rest of that route. It is not gone:
+`--legacy-option-a` puts it back, which is what `make_validation_gedi_report.py`
+needs, since that older report is built around the A-versus-B comparison. The
+cell tables it reads are still in outputs/.
 
 ## What is being tested, and why an envelope
 
@@ -19,6 +39,14 @@ measures what stands there now, 2019-2024, after clearing, logging and fire.
 GEDI below M' is therefore expected and proves nothing. GEDI above M' is the
 only direct evidence against M', so every headline number here is an
 exceedance rate, never an R2.
+
+For a FUTURE M' the same test carries a sharper meaning. Present-day biomass
+exceeding a future maximum says a stand ALREADY carries more than the model
+claims its site will support decades from now. That is not impossible - a
+drying climate can lower a ceiling below the standing stock, and the stand would
+then be expected to decline - but it is a strong claim, it is checkable today,
+and the rate at which it happens should order with forcing if the projection is
+doing what it says.
 
 Three GEDI statistics are compared, from least to most demanding of M':
 
@@ -38,7 +66,9 @@ Future M' is present M' scaled by Eq1(FPI_future) / Eq1(FPI_hist). GEDI cannot
 see 2035-2100, but it can test the mechanism: across space, does biomass rise
 with FPI as steeply as Eq. (1) says? The log-log slope of GEDI against FPI is
 compared with the slope of each M' layer and with Eq. (1)'s own elasticity.
-This is a space-for-time substitution and is reported as such.
+This is a space-for-time substitution and is reported as such. It is the only
+part of this folder that speaks to whether the PROJECTED CHANGE is the right
+size, as opposed to whether the projected LEVEL is survivable.
 """
 
 from __future__ import annotations
@@ -55,12 +85,32 @@ OUT = HERE / "outputs"
 ANA = OUT / "analysis"
 FIG = OUT / "figures"
 
-LAYERS = {
-    "New_M_2019": "New_M_2019 (matched footing, Option B)",
-    "baseline_M_1985-2014": "baseline_M_1985-2014 (Eq. 1 footing, Option A)",
-}
-SHORT = {"New_M_2019": "New_M_2019", "baseline_M_1985-2014": "baseline_M"}
-COLOUR = {"New_M_2019": "#2a78d6", "baseline_M_1985-2014": "#eb6834"}
+ANCHOR = "New_M_2019"
+SSPS = ["ssp126", "ssp245", "ssp370", "ssp585"]
+WINDOWS = ["2035-2064", "2070-2099"]
+FUTURE = ["future_%s_%s" % (a, w) for w in WINDOWS for a in SSPS]
+
+LAYERS = {ANCHOR: "New_M_2019 (the anchor, and the historical limit of all "
+                  "eight future layers)"}
+LAYERS.update({t: "Future M, %s %s" % (t.split("_")[1].upper(),
+                                       t.split("_")[2]) for t in FUTURE})
+SHORT = {ANCHOR: "New_M_2019"}
+SHORT.update({t: "%s %s" % (t.split("_")[1].upper(), t.split("_")[2])
+              for t in FUTURE})
+
+# One hue per scenario, kept across every figure; grey for the anchor. Solid
+# for 2035-2064, dashed for 2070-2099, so window is read from line style and
+# scenario from colour.
+SSP_COLOUR = {"ssp126": "#2a78d6", "ssp245": "#1baf7a",
+              "ssp370": "#eda100", "ssp585": "#e34948"}
+COLOUR = {ANCHOR: "#6b6a66"}
+COLOUR.update({t: SSP_COLOUR[t.split("_")[1]] for t in FUTURE})
+LEGACY_OPTION_A = "baseline_M_1985-2014"
+
+STYLE = {ANCHOR: "-"}
+STYLE.update({t: ("-" if t.split("_")[2] == WINDOWS[0] else "--")
+              for t in FUTURE})
+
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 
 FPI_BINS = [0, 8, 10, 12, 14, 20]
@@ -215,31 +265,128 @@ def style(ax):
 
 
 def fig_scatter(data):
+    """The control: GEDI's upper envelope against the anchor, cell by cell.
+
+    One panel, not eight. The eight future layers differ from the anchor by a
+    few per cent in this domain, so eight of these would be eight copies; what
+    the future layers do is in fig2 and fig6 instead.
+    """
     import matplotlib.pyplot as plt
     n30 = "agbd_p95_n%d" % N_FIXED
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4.6), sharey=True)
-    for ax, tag in zip(axes, LAYERS):
-        c = data[tag]
-        ok = (c.m_prime > 0) & (c[n30] > 0)
-        hb = ax.hexbin(c.m_prime[ok], c[n30][ok], gridsize=55, bins="log",
-                       xscale="log", yscale="log", cmap="Blues", mincnt=1,
-                       linewidths=0)
-        lim = [10, 3000]
-        ax.plot(lim, lim, color=INK, lw=1.2)
-        ax.text(1900, 2500, "1:1", color=INK, fontsize=8.5, ha="right")
-        ax.set_xlim(lim)
-        ax.set_ylim(lim)
-        style(ax)
-        ax.set_title(SHORT[tag], fontsize=10, color=INK, loc="left")
-        ax.set_xlabel("M' (t DM ha$^{-1}$)", fontsize=9, color=INK2)
-        pct = 100 * (c[n30] > c.m_prime).mean()
-        ax.text(12, 1500, "above 1:1: %.1f%% of cells" % pct, fontsize=8.5,
-                color=INK)
-    axes[0].set_ylabel("GEDI p95, fixed n = 30 (t DM ha$^{-1}$)", fontsize=9,
-                       color=INK2)
-    cb = fig.colorbar(hb, ax=axes, shrink=0.85, pad=0.02)
-    cb.set_label("cells per hexagon (log)", fontsize=8.5, color=INK2)
-    fig.savefig(FIG / "fig1_p95_vs_Mprime_both_layers.png", dpi=200,
+    c = data[ANCHOR]
+    fig, ax = plt.subplots(figsize=(6.2, 5.4))
+    hi = float(np.nanpercentile(
+        np.concatenate([c.m_prime.values, c[n30].values]), 99))
+    hb = ax.hexbin(c.m_prime, c[n30], gridsize=60, cmap="Blues", mincnt=1,
+                   extent=(0, hi, 0, hi), linewidths=0)
+    counts = np.asarray(hb.get_array())
+    pos = counts[counts > 0]
+    if len(pos):
+        hb.set_clim(0, float(np.percentile(pos, 98)))
+    cb = fig.colorbar(hb, ax=ax, fraction=0.045, pad=0.02)
+    cb.set_label("cells per bin", fontsize=9, color=INK2)
+    cb.ax.tick_params(labelsize=8, colors=INK2)
+    ax.plot([0, hi], [0, hi], color=INK, lw=1.1, ls="--")
+    ax.set(xlim=(0, hi), ylim=(0, hi))
+    style(ax)
+    ax.set_xlabel("M' (t DM ha$^{-1}$)", fontsize=9, color=INK2)
+    ax.set_ylabel("GEDI p95 from 30 footprints (Mg ha$^{-1}$)", fontsize=9,
+                  color=INK2)
+    ax.set_title("Control: GEDI's upper envelope against New_M_2019",
+                 fontsize=10, color=INK, loc="left")
+    ax.text(0.03, 0.97, "points above the 1:1 line are cells where\n"
+            "GEDI already measures more than M' allows\n%.1f%% of cells"
+            % (100 * (c[n30] > c.m_prime).mean()),
+            transform=ax.transAxes, va="top", fontsize=8.4, color=INK2)
+    fig.tight_layout()
+    fig.savefig(FIG / "fig1_p95_vs_Mprime_anchor.png", dpi=200,
+                bbox_inches="tight")
+    plt.close(fig)
+
+
+def fig_future_exceedance(overall):
+    """The headline: how often present-day biomass already exceeds a FUTURE M'.
+
+    Three statistics per layer, from least to most demanding, on the
+    fire-excluded cells. The anchor is drawn as a horizontal reference in each
+    series, because a future layer's value is only interpretable as a change
+    against it - the anchor IS the historical limit of the eight.
+    """
+    import matplotlib.pyplot as plt
+    d = overall[(overall.footprints == "unburnt")].set_index("layer")
+    order = [t for t in FUTURE if t in d.index]
+    if not order:
+        return
+    x = np.arange(len(order))
+    series = [("exceed_mean_pct", "cell MEAN exceeds M'", "o", "-"),
+              ("exceed_p95_n30_pct", "p95 of 30 footprints exceeds M'", "s",
+               "-"),
+              ("exceed_p95_lo_pct", "p95 of the footprint LOWER bounds", "^",
+               "-")]
+    fig, ax = plt.subplots(figsize=(9.6, 5.0))
+    palette = ["#2a78d6", "#eb6834", "#1baf7a"]
+    for (col, lab, mk, ls), colour in zip(series, palette):
+        ax.plot(x, d.loc[order, col], marker=mk, ls=ls, lw=2.0, ms=8,
+                color=colour, markeredgecolor="#fcfcfb", markeredgewidth=1.2,
+                label=lab, zorder=4)
+        if ANCHOR in d.index:
+            ax.axhline(d.loc[ANCHOR, col], color=colour, lw=1.0, ls=":",
+                       alpha=0.8, zorder=2)
+    ax.set_xticks(x)
+    ax.set_xticklabels([SHORT[t].replace(" ", "\n") for t in order],
+                       fontsize=8.5)
+    style(ax)
+    ax.set_ylabel("cells where 2019-2024 GEDI biomass\n"
+                  "already exceeds the projected maximum (%)",
+                  fontsize=9, color=INK2)
+    ax.set_title("Does present-day biomass already exceed the future maximum?",
+                 fontsize=10.5, color=INK, loc="left")
+    ax.legend(frameon=False, fontsize=8.5, loc="center left")
+    ax.text(0.995, -0.16, "dotted lines: the same statistic for the anchor, "
+            "New_M_2019", transform=ax.transAxes, ha="right", fontsize=8,
+            color=INK2)
+    fig.tight_layout()
+    fig.savefig(FIG / "fig2_future_exceedance.png", dpi=200,
+                bbox_inches="tight")
+    plt.close(fig)
+
+
+def fig_future_ratio(ratio):
+    """How much the projection moves M' inside the GEDI domain.
+
+    The GEDI footprints sit in tall wet forest, which is not where the
+    projected change is largest, so this is a statement about the domain this
+    validation can see - not about the continent.
+    """
+    import matplotlib.pyplot as plt
+    d = ratio.set_index("layer")
+    order = [t for t in FUTURE if t in d.index]
+    if not order:
+        return
+    x = np.arange(len(order))
+    fig, ax = plt.subplots(figsize=(9.6, 4.8))
+    for xi, t in zip(x, order):
+        colour = COLOUR[t]
+        ax.plot([xi, xi], [d.loc[t, "p10"], d.loc[t, "p90"]], color=colour,
+                lw=1.6, alpha=0.75, zorder=3)
+        ax.plot([xi], [d.loc[t, "median"]], marker="o", ms=9, color=colour,
+                markeredgecolor="#fcfcfb", markeredgewidth=1.3, zorder=5)
+        ax.annotate("%.3f" % d.loc[t, "median"], (xi, d.loc[t, "median"]),
+                    xytext=(0, 10), textcoords="offset points", ha="center",
+                    fontsize=8.2, color=INK2)
+    ax.axhline(1.0, color=INK, lw=1.1, ls="--", zorder=4)
+    ax.set_xticks(x)
+    ax.set_xticklabels([SHORT[t].replace(" ", "\n") for t in order],
+                       fontsize=8.5)
+    style(ax)
+    ax.set_ylabel("future M' / New_M_2019, per cell", fontsize=9, color=INK2)
+    ax.set_title("How much the projection moves M' where GEDI can see it",
+                 fontsize=10.5, color=INK, loc="left")
+    ax.text(0.995, -0.18, "marker is the median over cells, bar the 10th to "
+            "90th percentile", transform=ax.transAxes, ha="right", fontsize=8,
+            color=INK2)
+    fig.tight_layout()
+    fig.savefig(FIG / "fig6_future_over_anchor.png", dpi=200,
                 bbox_inches="tight")
     plt.close(fig)
 
@@ -335,43 +482,67 @@ def fig_regions(reg):
 
 
 def fig_elasticity(data):
+    """Does biomass rise with FPI as steeply as Eq. (1) says it should?
+
+    The mechanism behind every future layer is Eq1(FPI_future)/Eq1(FPI_hist),
+    so the elasticity of M' with respect to FPI is the projection's own
+    assumption about how much biomass a change in productivity buys. GEDI
+    cannot see 2035-2100, but it can be asked the same question across SPACE
+    today: between two cells that differ in FPI, how much do they differ in
+    biomass? If Eq. (1) is far steeper than the observed spatial gradient, the
+    projected change is too large for the same reason.
+
+    Everything is indexed to the FPI 10-11 bin so the comparison is of SHAPE,
+    not level - the levels differ by construction and are not the question.
+    """
     import matplotlib.pyplot as plt
     n30 = "agbd_p95_n%d" % N_FIXED
-    c0 = data["New_M_2019"]
+    c0 = data[ANCHOR]
     f0 = c0[c0.ebf_frac >= 0.9]
     edges = np.arange(6, 17.5, 1.0)
     mid = 0.5 * (edges[:-1] + edges[1:])
-    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    fig, ax = plt.subplots(figsize=(7.6, 4.8))
 
     def binned(f, col, min_cells=30):
         b = pd.cut(f.fpi_mean, edges)
         g = f.groupby(b, observed=False)[col]
-        v = g.median().values
+        v = g.median().values.astype(float)
         v[g.size().values < min_cells] = np.nan
         return v
 
-    series = [("M' New_M_2019", binned(f0, "m_prime"), COLOUR["New_M_2019"], "-"),
-              ("M' baseline_M", binned(data["baseline_M_1985-2014"].pipe(
-                  lambda d: d[d.ebf_frac >= 0.9]), "m_prime"),
-               COLOUR["baseline_M_1985-2014"], "-"),
-              ("GEDI p95 (n = 30)", binned(f0, n30), INK, "-"),
-              ("GEDI mean", binned(f0, "agbd_mean"), INK2, "--")]
     ref = np.argmin(np.abs(mid - 10.5))
-    for name, v, col, ls in series:
-        ax.plot(mid, 100 * v / v[ref], color=col, lw=2, ls=ls, marker="o",
-                ms=4, label=name)
+
+    def draw(v, colour, ls, lab, lw=2.0, marker="o", ms=4, z=4):
+        if np.all(~np.isfinite(v)) or not np.isfinite(v[ref]):
+            return
+        ax.plot(mid, 100 * v / v[ref], color=colour, lw=lw, ls=ls,
+                marker=marker, ms=ms, label=lab, zorder=z)
+
+    # the eight future layers first, so the reference series draw over them
+    for t in FUTURE:
+        if t not in data:
+            continue
+        f = data[t]
+        draw(binned(f[f.ebf_frac >= 0.9], "m_prime"), COLOUR[t], STYLE[t],
+             None, lw=1.2, marker="", z=3)
+    draw(binned(f0, "m_prime"), COLOUR[ANCHOR], "-",
+         "M' New_M_2019 and the eight future layers", lw=2.4, z=5)
+    draw(binned(f0, n30), INK, "-", "GEDI p95 (n = 30)", lw=2.4, z=6)
+    draw(binned(f0, "agbd_mean"), INK2, "--", "GEDI mean", lw=2.0, z=6)
     e = eq1(mid)
-    ax.plot(mid, 100 * e / e[ref], color="#1baf7a", lw=2, ls=":",
-            label="Eq. (1) shape")
-    ax.set_yscale("log")
+    ax.plot(mid, 100 * e / e[ref], color="#1baf7a", lw=2.2, ls=":",
+            label="Eq. (1) shape", zorder=7)
+
     style(ax)
     ax.set_xlabel("mean FPI 1985-2014", fontsize=9, color=INK2)
-    ax.set_ylabel("index, FPI 10-11 = 100 (log scale)", fontsize=9,
-                  color=INK2)
+    ax.set_ylabel("index, FPI 10-11 = 100", fontsize=9, color=INK2)
     ax.set_title("How steeply biomass rises with FPI (evergreen broadleaf "
-                 "cells; bins < 30 cells hidden)", fontsize=10, color=INK,
+                 "cells; bins under 30 cells hidden)", fontsize=10, color=INK,
                  loc="left")
     ax.legend(frameon=False, fontsize=8.5)
+    ax.text(0.995, -0.17, "thin coloured lines: the eight future layers, "
+            "indistinguishable from the anchor on this axis",
+            transform=ax.transAxes, ha="right", fontsize=8, color=INK2)
     fig.tight_layout()
     fig.savefig(FIG / "fig4_fpi_elasticity_index.png", dpi=200,
                 bbox_inches="tight")
@@ -379,6 +550,22 @@ def fig_elasticity(data):
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--legacy-option-a", action="store_true",
+                    help="also score the retired Eq. (1)-footing layer "
+                         "(baseline_M_1985-2014). Off by default; needed only "
+                         "to regenerate the older present-day report, which is "
+                         "built around the A-versus-B comparison")
+    args = ap.parse_args()
+    if args.legacy_option_a:
+        LAYERS[LEGACY_OPTION_A] = ("baseline_M_1985-2014 (Eq. 1 footing, "
+                                   "Option A - RETIRED)")
+        SHORT[LEGACY_OPTION_A] = "baseline_M"
+        COLOUR[LEGACY_OPTION_A] = "#eb6834"
+        STYLE[LEGACY_OPTION_A] = "-"
+        print("including the retired Option A layer")
+
     ANA.mkdir(parents=True, exist_ok=True)
     FIG.mkdir(parents=True, exist_ok=True)
 
@@ -437,28 +624,56 @@ def main():
     forest.to_csv(ANA / "by_forest_class.csv", index=False)
     elast.to_csv(ANA / "fpi_elasticity.csv", index=False)
 
-    pair = data["New_M_2019"][["cell_id", "m_prime"]].merge(
-        data["baseline_M_1985-2014"][["cell_id", "m_prime"]], on="cell_id",
-        suffixes=("_new", "_base"))
-    r = (pair.m_prime_base / pair.m_prime_new).replace([np.inf, -np.inf], np.nan)
-    ratio = pd.DataFrame({"cells": [len(pair)],
-                          "baseline_over_New_M_median": [r.median()],
-                          "baseline_over_New_M_p10": [r.quantile(.1)],
-                          "baseline_over_New_M_p90": [r.quantile(.9)]})
-    ratio.to_csv(ANA / "layer_ratio_in_region.csv", index=False)
-    pair = pair.assign(ratio=r).merge(
-        data["New_M_2019"][["cell_id", "region"]], on="cell_id")
-    pair.groupby("region").ratio.agg(
-        baseline_over_New_M_median="median",
-        baseline_over_New_M_p10=lambda s: s.quantile(.1),
-        baseline_over_New_M_p90=lambda s: s.quantile(.9)
-    ).to_csv(ANA / "layer_ratio_by_region.csv")
+    # Each future layer against the anchor, cell by cell. The anchor is the
+    # historical limit of every one of them, so this ratio IS the projected
+    # change as it falls inside the GEDI domain - which is tall wet forest, not
+    # where the change is largest, and the report says so.
+    anchor_m = data[ANCHOR][["cell_id", "m_prime", "region"]].rename(
+        columns={"m_prime": "m_anchor"})
+    rows_r, rows_rr = [], []
+    for t in FUTURE:
+        if t not in data:
+            continue
+        pair = data[t][["cell_id", "m_prime"]].merge(anchor_m, on="cell_id")
+        r = (pair.m_prime / pair.m_anchor).replace([np.inf, -np.inf], np.nan)
+        rows_r.append({"layer": t, "cells": len(pair),
+                       "median": r.median(), "p10": r.quantile(.1),
+                       "p90": r.quantile(.9),
+                       "pct_cells_below_anchor": 100 * (r < 1).mean()})
+        g = pair.assign(ratio=r).groupby("region").ratio
+        rows_rr.append(pd.DataFrame({
+            "layer": t, "median": g.median(), "p10": g.quantile(.1),
+            "p90": g.quantile(.9)}).reset_index())
+    ratio = pd.DataFrame(rows_r)
+    ratio.to_csv(ANA / "future_over_anchor.csv", index=False)
+
+    if LEGACY_OPTION_A in data:
+        # The two tables the older present-day report reads. Written only when
+        # the retired layer was asked for, so they cannot go stale silently.
+        pair = data[LEGACY_OPTION_A][["cell_id", "m_prime"]].merge(
+            anchor_m, on="cell_id")
+        r = (pair.m_prime / pair.m_anchor).replace([np.inf, -np.inf], np.nan)
+        pd.DataFrame({"cells": [len(pair)],
+                      "baseline_over_New_M_median": [r.median()],
+                      "baseline_over_New_M_p10": [r.quantile(.1)],
+                      "baseline_over_New_M_p90": [r.quantile(.9)]}).to_csv(
+            ANA / "layer_ratio_in_region.csv", index=False)
+        pair.assign(ratio=r).groupby("region").ratio.agg(
+            baseline_over_New_M_median="median",
+            baseline_over_New_M_p10=lambda v: v.quantile(.1),
+            baseline_over_New_M_p90=lambda v: v.quantile(.9)
+        ).to_csv(ANA / "layer_ratio_by_region.csv")
+    if rows_rr:
+        pd.concat(rows_rr, ignore_index=True).to_csv(
+            ANA / "future_over_anchor_by_region.csv", index=False)
 
     fig_scatter(data)
+    fig_future_exceedance(overall)
     fig_bins(bins)
     fig_map(data)
     fig_elasticity(data)
     fig_regions(regions)
+    fig_future_ratio(ratio)
 
     pd.set_option("display.width", 200)
     print(overall.round(2).T)
