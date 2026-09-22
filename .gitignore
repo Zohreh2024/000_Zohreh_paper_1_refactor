@@ -139,9 +139,40 @@ Validation_M/National_biomass_library/Space_time_validation/logs/
 Validation_M/National_biomass_library/NBL_download/
 Validation_M/National_biomass_library/NBL_previousdownload/
 
+# --------------------------------------------------------------------------- #
+# Random_forest_CSIRO - the FPI model everything downstream rests on.
+#
+# The CODE and the small result tables are tracked; the data is not, because
+# the folder is 1.4 TB:
+#
+#     required_data/   1.4 TB   raw climate and soil the model is fitted on
+#     data/             15 GB   training table, the fitted forest, out-of-fold
+#                               predictions - but see the re-inclusions, the
+#                               nine small CSV/txt summaries ARE tracked
+#     output/           12 GB   the predicted FPI rasters
+#     plots/           5.2 MB   tracked
+#
+# Nothing here is deleted or moved by these rules. An ignored file simply is
+# not version-controlled: it stays on disk exactly as it is, and git will not
+# touch it. The scripts, README, report and result tables are enough to
+# reproduce the rest from the raw inputs.
+Random_forest_CSIRO/required_data/
+Random_forest_CSIRO/data/*
+Random_forest_CSIRO/output/
+Random_forest_CSIRO/logs/
+Random_forest_CSIRO/__pycache__/
+
+
 # Re-inclusions - MUST stay last
 # --------------------------------------------------------------------------- #
 # gitignore is last-match-wins, so a negation only survives if nothing below it
 # re-excludes the path. The broad *.tif rule above would otherwise swallow the
 # NLUM template. Verified with `git check-ignore -v`.
 !Data/NLUM_Mask/NLUM_2010-11_mask.tif
+
+# Random_forest_CSIRO/data/ is excluded above for its 15 GB of NetCDF, .npz and
+# .pkl, but these nine files are the model's RESULTS and are a few kB each.
+# cv_metrics.csv in particular is read directly by
+# FPI_Accuracy_check/Step_06_write_report.py to build the accuracy table.
+!Random_forest_CSIRO/data/*.csv
+!Random_forest_CSIRO/data/model_card.txt
