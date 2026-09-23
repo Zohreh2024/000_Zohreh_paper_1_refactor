@@ -1,0 +1,11 @@
+run_id,changed,d_ratio_future,d_rho_future,d_pct_no_analogue,n_sites,sample_comparable,interpretation
+run01_verified_only,maturity,0.09590509385354964,0.10269799132264379,1.7316513761467895,327,True,delta attributable to the change
+run02_unconstrained,matching constraint,-0.0005854628298210818,-0.01697076749359519,-8.166666666666666,600,True,delta attributable to the change
+run03_mean_of_annual,averaging order,-0.0005464315241550388,0.00019836554528561423,0.0,600,True,delta attributable to the change
+run04_climate_only,predictors,0.014329137817934101,-0.11455212814018781,64.83333333333334,600,False,sample also changed - delta confounded by which sites survive
+run05_reduced,predictors,0.001120934700230669,-0.03470801414832092,7.25,600,True,delta attributable to the change
+run06_variance_99,PCA variance kept,0.02309965940815381,0.013543976779666927,-1.5833333333333335,600,True,delta attributable to the change
+run07_cutoff_95,no-analogue cutoff,-0.11946429903160882,0.13265004807195974,46.08333333333333,600,False,sample also changed - delta confounded by which sites survive
+run08_k5,neighbours averaged,-0.02449921516274403,0.07119817296079795,12.5,600,False,sample also changed - delta confounded by which sites survive
+run09_noqc,data quality,0.12074077125971616,-0.17928721407226636,1.4147286821705425,688,True,delta attributable to the change
+run10_minclass_100,NVIS fallback threshold,-2.1033380641743982e-05,0.0009561638455085342,-0.08333333333333304,600,True,delta attributable to the change

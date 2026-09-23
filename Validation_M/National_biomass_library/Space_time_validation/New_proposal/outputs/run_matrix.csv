@@ -1,0 +1,12 @@
+run_id,changed,what,override
+run00_baseline,(none),the current configuration,(baseline)
+run01_verified_only,maturity,"verified mature only, dropping the likely-mature half",maturity=['verified mature']
+run02_unconstrained,matching constraint,no NVIS constraint on the analogue search,constrain=none
+run03_mean_of_annual,averaging order,mean of the annual Eq. (1) M rather than Eq. (1) of the mean FPI,order=mean_of_annual
+run04_climate_only,predictors,"the 91 climate columns, dropping the 83 soil columns",features=climate
+run05_reduced,predictors,16 columns: 7 annual climate means and one slice of 9 soil properties,features=reduced
+run06_variance_99,PCA variance kept,0.99 of the historical variance rather than 0.95,variance=0.99
+run07_cutoff_95,no-analogue cutoff,"the 95th percentile of within-historical NN distance, not the 99th",cutoff_pct=95.0
+run08_k5,neighbours averaged,the mean of the 5 nearest cells rather than the single nearest,k=5
+run09_noqc,data quality,the sample without the AGB-versus-basal-area consistency filter,reference_table=reference_table_noqc.csv
+run10_minclass_100,NVIS fallback threshold,"a subgroup needs 100 pool cells before it constrains, not 25",min_class_cells=100
