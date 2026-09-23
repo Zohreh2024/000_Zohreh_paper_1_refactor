@@ -12,6 +12,7 @@ any of them is re-run.
     Run_03                   rebuilding biomass from stem diameters
     Run_04                   a maturity rule on basal area
     combined_Run             the five decisions those tests point to
+    Run_05_ceiling           the ceiling, tested on its own
 
 Every configuration is placed on one axis: the rank correlation of the eight
 future runs MINUS that of their own NVIS-constrained null. That is the only
@@ -61,7 +62,7 @@ RUN_COLOUR = {
     "Run_0": "#6b6a66", "Run_01": "#eb6834",
     "Plot_area_floor_method": "#1baf7a", "Run_02": "#eda100",
     "Run_03": "#2a78d6", "Run_04": "#e34948",
-    "combined_Run": "#7d3c98",
+    "combined_Run": "#7d3c98", "Run_05_ceiling": "#16a085",
 }
 CONTROLS = ["same_cell_present_day", "historical_analogue",
             "random_cells_nvis", "random_cells_unconstrained", "random_cells"]
@@ -194,6 +195,19 @@ def collect():
                 continue           # that is Run 0
             out.append(row("Run_04", r["config"],
                            "maturity from basal area",
+                           int(r["sites"]), float(r["ratio"]), float(r["rho"]),
+                           float(r["null_nvis_rho"]), float(r["gate_rho"]),
+                           float(r["no_analogue"])))
+
+    # ---- Run_05_ceiling: the ceiling on its own ----------------------- #
+    f = HERE / "Run_05_ceiling" / "outputs" / "run05_headline.csv"
+    if f.exists():
+        s = pd.read_csv(f)
+        for _, r in s.iterrows():
+            if r["config"] in ("run0", "rebuilt"):
+                continue           # already present from Run_0 and Run_03
+            out.append(row("Run_05_ceiling", r["config"],
+                           "AGB-to-basal-area ceiling",
                            int(r["sites"]), float(r["ratio"]), float(r["rho"]),
                            float(r["null_nvis_rho"]), float(r["gate_rho"]),
                            float(r["no_analogue"])))
@@ -382,6 +396,9 @@ def build_report(d):
          "largest change of all: the present-day gate rises 0.42 to 0.73"],
         ["Run_04", "maturity from basal area",
          "the rule is sound, the sample it unlocks is not"],
+        ["Run_05_ceiling", "the ceiling, tested on its own",
+         "justified: it improves Run 0 and the rebuild, monotonically with "
+         "tightness, on a criterion M' never enters"],
         ["combined_Run", "the five decisions those tests point to",
          "the gate reaches 0.844 on 850 sites, 147 of them south of 37 S"],
     ], ["study", "what it changed", "outcome"], widths=[1.6, 2.0, 2.6])

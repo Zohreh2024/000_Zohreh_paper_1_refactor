@@ -1,0 +1,197 @@
+config,site,source,agb,live_ba,agb_per_ba,area_ha,maturity
+ceiling_p90,11404,UQ Joint Remote Sensing Research Program,636.6071,13.3834,47.56691872020562,0.25,likely mature
+ceiling_p90,11412,UQ Joint Remote Sensing Research Program,193.9616,5.0335,38.53414125360087,0.25,likely mature
+ceiling_p90,12406,UQ Joint Remote Sensing Research Program,721.7538,15.1894,47.51693944461269,0.25,likely mature
+ceiling_p90,12419,UQ Joint Remote Sensing Research Program,1007.5221,17.1217,58.844746724916334,0.25,likely mature
+ceiling_p90,14220,UQ Joint Remote Sensing Research Program,539.9974,8.5491,63.16423951059176,0.25,likely mature
+ceiling_p90,14816,UQ Joint Remote Sensing Research Program,1106.6548,9.9847,110.83505763818644,0.25,verified mature
+ceiling_p90,14821,UQ Joint Remote Sensing Research Program,414.1185,8.9597,46.22013013828588,0.25,verified mature
+ceiling_p90,20,Flinders University (SA),602.2954,10.9513,54.99761672130249,0.05,likely mature
+ceiling_p90,23,Flinders University (SA),318.7175,8.274,38.52036499879139,0.15,likely mature
+ceiling_p90,8312,UQ Joint Remote Sensing Research Program,456.7694,4.8008,95.14443426095652,0.25,likely mature
+ceiling_p90,BCC_19,DSITI Queensland Herbarium,627.8607,15.6177,40.20186711231487,0.8,verified mature
+ceiling_p90,Bedooba2,Western Regeneration Pty. Ltd.,813.4584,11.2989,71.99447733850198,0.1,likely mature
+ceiling_p90,CATER0006,DSITI Queensland Herbarium,1185.8598,21.559,55.00532492230622,0.4,verified mature
+ceiling_p90,CATER0016,DSITI Queensland Herbarium,1132.2937,9.5432,118.64926858915248,0.4,likely mature
+ceiling_p90,CATER0017,DSITI Queensland Herbarium,595.2099,14.9385,39.84402048398433,0.4,verified mature
+ceiling_p90,CATER0024,DSITI Queensland Herbarium,815.7206,11.0841,73.59376043160924,0.4,verified mature
+ceiling_p90,CATER0062,DSITI Queensland Herbarium,1229.613,15.9549,77.06804806047046,0.4,verified mature
+ceiling_p90,CATER0067,DSITI Queensland Herbarium,528.7564,12.322,42.91157279662393,0.4,likely mature
+ceiling_p90,Cali1_118,DSITI Queensland Herbarium,989.1821,24.0473,41.13485089802182,0.16,verified mature
+ceiling_p90,Cali1_122,DSITI Queensland Herbarium,590.6702,8.5581,69.01884764141575,0.2,verified mature
+ceiling_p90,Cali1_131,DSITI Queensland Herbarium,994.3726,22.1758,44.840438676395,0.16,verified mature
+ceiling_p90,Cali1_136,DSITI Queensland Herbarium,153.6486,2.6593,57.77783627270334,0.4,verified mature
+ceiling_p90,Cali1_137,DSITI Queensland Herbarium,793.3017,10.2762,77.19796228177731,0.2,verified mature
+ceiling_p90,Cali1_139,DSITI Queensland Herbarium,551.2999,10.1697,54.21004552740002,0.2,verified mature
+ceiling_p90,Cali1_17,DSITI Queensland Herbarium,769.8375,13.2307,58.18569690190239,0.12,verified mature
+ceiling_p90,Cali1_19,DSITI Queensland Herbarium,190.738,3.5731,53.38165738434412,0.12,likely mature
+ceiling_p90,Cali1_63,DSITI Queensland Herbarium,860.2685,19.7546,43.54775596569913,0.16,verified mature
+ceiling_p90,Cali1_65,DSITI Queensland Herbarium,331.2333,8.1729,40.528245787908816,0.2,likely mature
+ceiling_p90,Cali1_81,DSITI Queensland Herbarium,318.1719,7.1265,44.64630604083351,0.16,likely mature
+ceiling_p90,Cali1_91,DSITI Queensland Herbarium,567.7853,4.173,136.0616582794153,0.2,likely mature
+ceiling_p90,Cali2_1,DSITI Queensland Herbarium,568.4308,4.0542,140.20788318287208,0.32,likely mature
+ceiling_p90,Cali2_10,DSITI Queensland Herbarium,237.216,5.0604,46.87692672516008,0.4,likely mature
+ceiling_p90,Cali2_11,DSITI Queensland Herbarium,497.4681,12.4966,39.80827585103148,0.24,likely mature
+ceiling_p90,Cali2_12,DSITI Queensland Herbarium,30.8258,0.3826,80.56926293779405,0.42,likely mature
+ceiling_p90,Cali2_19,DSITI Queensland Herbarium,519.2521,11.5736,44.86521911937513,0.24,likely mature
+ceiling_p90,Cali2_26,DSITI Queensland Herbarium,236.6044,3.0475,77.6388515176374,0.4,likely mature
+ceiling_p90,Cali2_28,DSITI Queensland Herbarium,600.7568,5.9693,100.64108019365756,0.32,likely mature
+ceiling_p90,Cali2_29,DSITI Queensland Herbarium,534.1219,12.5572,42.5351113305514,0.24,likely mature
+ceiling_p90,Cali2_3,DSITI Queensland Herbarium,258.2769,4.155,62.16050541516245,0.32,likely mature
+ceiling_p90,Cali2_33,DSITI Queensland Herbarium,609.0418,9.986,60.98956539154816,0.24,likely mature
+ceiling_p90,Cali2_34,DSITI Queensland Herbarium,808.7265,12.0791,66.95254613340397,0.24,likely mature
+ceiling_p90,Cali2_35,DSITI Queensland Herbarium,320.8536,7.3133,43.872615645467846,0.24,likely mature
+ceiling_p90,Cali2_38,DSITI Queensland Herbarium,159.1437,3.4093,46.67928900360778,0.24,likely mature
+ceiling_p90,Cali2_46,DSITI Queensland Herbarium,373.1309,4.543,82.1331499009465,0.24,likely mature
+ceiling_p90,Cali2_47,DSITI Queensland Herbarium,418.6839,7.4877,55.91622260507231,0.24,likely mature
+ceiling_p90,Cali2_51,DSITI Queensland Herbarium,191.2222,3.5656,53.62973973524792,0.24,likely mature
+ceiling_p90,Cali2_52,DSITI Queensland Herbarium,319.1882,6.2701,50.90639702716065,0.24,likely mature
+ceiling_p90,Cali2_57,DSITI Queensland Herbarium,497.2928,6.2972,78.97046306294861,0.24,likely mature
+ceiling_p90,Cali2_60,DSITI Queensland Herbarium,277.4844,3.2388,85.6750648388292,0.24,likely mature
+ceiling_p90,Cali2_64,DSITI Queensland Herbarium,325.8834,6.6808,48.77909831157945,0.24,likely mature
+ceiling_p90,Cali2_65,DSITI Queensland Herbarium,410.5668,6.5346,62.82967587916628,0.24,verified mature
+ceiling_p90,Cali2_66,DSITI Queensland Herbarium,602.6046,6.7506,89.26682072704648,0.24,likely mature
+ceiling_p90,Cali2_69,DSITI Queensland Herbarium,316.291,7.3856,42.82536286828423,0.24,verified mature
+ceiling_p90,Cali2_70,DSITI Queensland Herbarium,225.4154,5.7942,38.90362776569673,0.24,likely mature
+ceiling_p90,Cali2_71,DSITI Queensland Herbarium,170.9527,4.4233,38.64822643727533,0.24,likely mature
+ceiling_p90,Cali2_72,DSITI Queensland Herbarium,313.8501,5.9649,52.616154503847504,0.24,likely mature
+ceiling_p90,Cali2_75,DSITI Queensland Herbarium,393.3599,8.2005,47.96779464666788,0.24,verified mature
+ceiling_p90,Cali2_76,DSITI Queensland Herbarium,322.8615,5.6678,56.96416599033135,0.24,verified mature
+ceiling_p90,Cali2_78,DSITI Queensland Herbarium,420.3668,5.4094,77.71042999223575,0.24,likely mature
+ceiling_p90,Cali2_79,DSITI Queensland Herbarium,409.3405,5.8769,69.65245282376763,0.24,likely mature
+ceiling_p90,Cali2_8,DSITI Queensland Herbarium,375.6929,5.0161,74.89741033870936,0.24,likely mature
+ceiling_p90,Cali2_9,DSITI Queensland Herbarium,221.6417,4.6254,47.91838543693518,0.4,likely mature
+ceiling_p90,Dijoe1,Western Regeneration Pty. Ltd.,358.2627,9.5878,37.36651786645529,0.1,verified mature
+ceiling_p90,Dijoe4,Western Regeneration Pty. Ltd.,486.3025,12.0632,40.312893759533125,0.1,likely mature
+ceiling_p90,DoubleGates2,Western Regeneration Pty. Ltd.,1140.558,12.351,92.3453971338353,0.1,likely mature
+ceiling_p90,Dwyer.brigalow_37,DSITI Queensland Herbarium,503.0432,5.5131,91.24507083129276,0.16,likely mature
+ceiling_p90,Dwyer.brigalow_45,DSITI Queensland Herbarium,508.4343,6.7105,75.7669771254005,0.16,likely mature
+ceiling_p90,Dwyer.brigalow_69,DSITI Queensland Herbarium,780.6848,16.54,47.19980652962516,0.25,likely mature
+ceiling_p90,Etiwanda1,Western Regeneration Pty. Ltd.,436.2883,10.9786,39.73988486692292,0.1,likely mature
+ceiling_p90,Etiwanda4,Western Regeneration Pty. Ltd.,1392.5629,22.303,62.43836703582477,0.1,likely mature
+ceiling_p90,GilbertPark2,Western Regeneration Pty. Ltd.,800.8542,13.678,58.55053370375786,0.1,likely mature
+ceiling_p90,Glenwood1,Western Regeneration Pty. Ltd.,596.1347,10.2721,58.03435519514023,0.1,verified mature
+ceiling_p90,Kergunyah1,Western Regeneration Pty. Ltd.,441.4015,9.1582,48.1974077875565,0.1,likely mature
+ceiling_p90,Kergunyah2,Western Regeneration Pty. Ltd.,1316.1535,9.9712,131.99549703145058,0.1,likely mature
+ceiling_p90,KiaOra1,Western Regeneration Pty. Ltd.,762.4154,18.0357,42.27257051292714,0.1,likely mature
+ceiling_p90,KiaOra2,Western Regeneration Pty. Ltd.,58.1789,1.1393,51.06547880277363,0.1,likely mature
+ceiling_p90,Lyndhurst1,Western Regeneration Pty. Ltd.,847.3832,19.8088,42.77811881587981,0.1,verified mature
+ceiling_p90,Lyndhurst2,Western Regeneration Pty. Ltd.,1186.2614,12.8579,92.2593425053858,0.1,verified mature
+ceiling_p90,Manuka2,Western Regeneration Pty. Ltd.,404.4431,10.0011,40.43986161522233,0.1,likely mature
+ceiling_p90,Mulga.drought_13,DSITI Queensland Herbarium,142.1897,2.3318,60.9785144523544,0.5,likely mature
+ceiling_p90,Mulga.drought_145,DSITI Queensland Herbarium,823.4445,12.0313,68.44185582605371,0.5,verified mature
+ceiling_p90,Mulga.drought_167,DSITI Queensland Herbarium,320.5081,6.0762,52.748115598564894,0.5,verified mature
+ceiling_p90,Mulga.drought_169,DSITI Queensland Herbarium,1445.8878,12.7332,113.55258693808312,0.5,verified mature
+ceiling_p90,Mulga.drought_172,DSITI Queensland Herbarium,681.4764,14.3967,47.335597741149016,0.5,verified mature
+ceiling_p90,Mulga.drought_187,DSITI Queensland Herbarium,356.9466,7.8132,45.68507141760098,0.16,likely mature
+ceiling_p90,Mulga.drought_6,DSITI Queensland Herbarium,437.0478,9.0836,48.11394160905368,0.5,likely mature
+ceiling_p90,Mulga.drought_74,DSITI Queensland Herbarium,258.1107,3.6949,69.855936561206,0.2,likely mature
+ceiling_p90,NQ.dieback_136,DSITI Queensland Herbarium,195.3653,1.4777,132.20904107734992,0.2,likely mature
+ceiling_p90,NQ.dieback_20,DSITI Queensland Herbarium,105.2363,2.1701,48.49375604810838,0.2,likely mature
+ceiling_p90,NQ.dieback_83,DSITI Queensland Herbarium,250.3871,4.9936,50.14160124959949,0.2,verified mature
+ceiling_p90,NQ.dieback_85,DSITI Queensland Herbarium,635.2888,13.8894,45.73911040073725,0.2,verified mature
+ceiling_p90,NQ.dieback_9,DSITI Queensland Herbarium,222.9974,3.1102,71.69873320043727,0.2,likely mature
+ceiling_p90,NQ.dieback_91,DSITI Queensland Herbarium,289.889,4.5145,64.21286964226383,0.2,likely mature
+ceiling_p90,NormaVale3,Western Regeneration Pty. Ltd.,674.6057,10.3188,65.37637128348257,0.1,likely mature
+ceiling_p90,Nullawarra3,Western Regeneration Pty. Ltd.,628.615,10.1753,61.778522500565096,0.1,likely mature
+ceiling_p90,Osterley1,Western Regeneration Pty. Ltd.,623.3145,14.91,41.80513078470825,0.1,verified mature
+ceiling_p90,Osterley2,Western Regeneration Pty. Ltd.,1068.1421,13.4125,79.63780801491147,0.1,likely mature
+ceiling_p90,TheMeadows1,Western Regeneration Pty. Ltd.,483.7326,4.9337,98.0466181567586,0.1,likely mature
+ceiling_p90,TheRookery3,Western Regeneration Pty. Ltd.,1203.1895,28.1811,42.69490899929385,0.1,verified mature
+ceiling_p90,TheRookery4,Western Regeneration Pty. Ltd.,543.5555,12.7526,42.62311214967929,0.1,likely mature
+ceiling_p90,TheRookery5,Western Regeneration Pty. Ltd.,638.9186,16.4005,38.95726349806408,0.1,verified mature
+ceiling_p90,Tindarey1,Western Regeneration Pty. Ltd.,229.8324,6.0291,38.12051549982585,0.1,likely mature
+ceiling_p90,Tindarey2,Western Regeneration Pty. Ltd.,372.5752,6.2737,59.38683711366498,0.1,likely mature
+ceiling_p90,Toolooly3,Western Regeneration Pty. Ltd.,1192.1796,8.9578,133.0884368929871,0.1,verified mature
+ceiling_p95,12419,UQ Joint Remote Sensing Research Program,1007.5221,17.1217,58.844746724916334,0.25,likely mature
+ceiling_p95,14220,UQ Joint Remote Sensing Research Program,539.9974,8.5491,63.16423951059176,0.25,likely mature
+ceiling_p95,14816,UQ Joint Remote Sensing Research Program,1106.6548,9.9847,110.83505763818644,0.25,verified mature
+ceiling_p95,20,Flinders University (SA),602.2954,10.9513,54.99761672130249,0.05,likely mature
+ceiling_p95,8312,UQ Joint Remote Sensing Research Program,456.7694,4.8008,95.14443426095652,0.25,likely mature
+ceiling_p95,Bedooba2,Western Regeneration Pty. Ltd.,813.4584,11.2989,71.99447733850198,0.1,likely mature
+ceiling_p95,CATER0006,DSITI Queensland Herbarium,1185.8598,21.559,55.00532492230622,0.4,verified mature
+ceiling_p95,CATER0016,DSITI Queensland Herbarium,1132.2937,9.5432,118.64926858915248,0.4,likely mature
+ceiling_p95,CATER0024,DSITI Queensland Herbarium,815.7206,11.0841,73.59376043160924,0.4,verified mature
+ceiling_p95,CATER0062,DSITI Queensland Herbarium,1229.613,15.9549,77.06804806047046,0.4,verified mature
+ceiling_p95,Cali1_122,DSITI Queensland Herbarium,590.6702,8.5581,69.01884764141575,0.2,verified mature
+ceiling_p95,Cali1_136,DSITI Queensland Herbarium,153.6486,2.6593,57.77783627270334,0.4,verified mature
+ceiling_p95,Cali1_137,DSITI Queensland Herbarium,793.3017,10.2762,77.19796228177731,0.2,verified mature
+ceiling_p95,Cali1_139,DSITI Queensland Herbarium,551.2999,10.1697,54.21004552740002,0.2,verified mature
+ceiling_p95,Cali1_17,DSITI Queensland Herbarium,769.8375,13.2307,58.18569690190239,0.12,verified mature
+ceiling_p95,Cali1_19,DSITI Queensland Herbarium,190.738,3.5731,53.38165738434412,0.12,likely mature
+ceiling_p95,Cali1_91,DSITI Queensland Herbarium,567.7853,4.173,136.0616582794153,0.2,likely mature
+ceiling_p95,Cali2_1,DSITI Queensland Herbarium,568.4308,4.0542,140.20788318287208,0.32,likely mature
+ceiling_p95,Cali2_12,DSITI Queensland Herbarium,30.8258,0.3826,80.56926293779405,0.42,likely mature
+ceiling_p95,Cali2_26,DSITI Queensland Herbarium,236.6044,3.0475,77.6388515176374,0.4,likely mature
+ceiling_p95,Cali2_28,DSITI Queensland Herbarium,600.7568,5.9693,100.64108019365756,0.32,likely mature
+ceiling_p95,Cali2_3,DSITI Queensland Herbarium,258.2769,4.155,62.16050541516245,0.32,likely mature
+ceiling_p95,Cali2_33,DSITI Queensland Herbarium,609.0418,9.986,60.98956539154816,0.24,likely mature
+ceiling_p95,Cali2_34,DSITI Queensland Herbarium,808.7265,12.0791,66.95254613340397,0.24,likely mature
+ceiling_p95,Cali2_46,DSITI Queensland Herbarium,373.1309,4.543,82.1331499009465,0.24,likely mature
+ceiling_p95,Cali2_47,DSITI Queensland Herbarium,418.6839,7.4877,55.91622260507231,0.24,likely mature
+ceiling_p95,Cali2_51,DSITI Queensland Herbarium,191.2222,3.5656,53.62973973524792,0.24,likely mature
+ceiling_p95,Cali2_57,DSITI Queensland Herbarium,497.2928,6.2972,78.97046306294861,0.24,likely mature
+ceiling_p95,Cali2_60,DSITI Queensland Herbarium,277.4844,3.2388,85.6750648388292,0.24,likely mature
+ceiling_p95,Cali2_65,DSITI Queensland Herbarium,410.5668,6.5346,62.82967587916628,0.24,verified mature
+ceiling_p95,Cali2_66,DSITI Queensland Herbarium,602.6046,6.7506,89.26682072704648,0.24,likely mature
+ceiling_p95,Cali2_72,DSITI Queensland Herbarium,313.8501,5.9649,52.616154503847504,0.24,likely mature
+ceiling_p95,Cali2_76,DSITI Queensland Herbarium,322.8615,5.6678,56.96416599033135,0.24,verified mature
+ceiling_p95,Cali2_78,DSITI Queensland Herbarium,420.3668,5.4094,77.71042999223575,0.24,likely mature
+ceiling_p95,Cali2_79,DSITI Queensland Herbarium,409.3405,5.8769,69.65245282376763,0.24,likely mature
+ceiling_p95,Cali2_8,DSITI Queensland Herbarium,375.6929,5.0161,74.89741033870936,0.24,likely mature
+ceiling_p95,DoubleGates2,Western Regeneration Pty. Ltd.,1140.558,12.351,92.3453971338353,0.1,likely mature
+ceiling_p95,Dwyer.brigalow_37,DSITI Queensland Herbarium,503.0432,5.5131,91.24507083129276,0.16,likely mature
+ceiling_p95,Dwyer.brigalow_45,DSITI Queensland Herbarium,508.4343,6.7105,75.7669771254005,0.16,likely mature
+ceiling_p95,Etiwanda4,Western Regeneration Pty. Ltd.,1392.5629,22.303,62.43836703582477,0.1,likely mature
+ceiling_p95,GilbertPark2,Western Regeneration Pty. Ltd.,800.8542,13.678,58.55053370375786,0.1,likely mature
+ceiling_p95,Glenwood1,Western Regeneration Pty. Ltd.,596.1347,10.2721,58.03435519514023,0.1,verified mature
+ceiling_p95,Kergunyah2,Western Regeneration Pty. Ltd.,1316.1535,9.9712,131.99549703145058,0.1,likely mature
+ceiling_p95,Lyndhurst2,Western Regeneration Pty. Ltd.,1186.2614,12.8579,92.2593425053858,0.1,verified mature
+ceiling_p95,Mulga.drought_13,DSITI Queensland Herbarium,142.1897,2.3318,60.9785144523544,0.5,likely mature
+ceiling_p95,Mulga.drought_145,DSITI Queensland Herbarium,823.4445,12.0313,68.44185582605371,0.5,verified mature
+ceiling_p95,Mulga.drought_167,DSITI Queensland Herbarium,320.5081,6.0762,52.748115598564894,0.5,verified mature
+ceiling_p95,Mulga.drought_169,DSITI Queensland Herbarium,1445.8878,12.7332,113.55258693808312,0.5,verified mature
+ceiling_p95,Mulga.drought_74,DSITI Queensland Herbarium,258.1107,3.6949,69.855936561206,0.2,likely mature
+ceiling_p95,NQ.dieback_136,DSITI Queensland Herbarium,195.3653,1.4777,132.20904107734992,0.2,likely mature
+ceiling_p95,NQ.dieback_9,DSITI Queensland Herbarium,222.9974,3.1102,71.69873320043727,0.2,likely mature
+ceiling_p95,NQ.dieback_91,DSITI Queensland Herbarium,289.889,4.5145,64.21286964226383,0.2,likely mature
+ceiling_p95,NormaVale3,Western Regeneration Pty. Ltd.,674.6057,10.3188,65.37637128348257,0.1,likely mature
+ceiling_p95,Nullawarra3,Western Regeneration Pty. Ltd.,628.615,10.1753,61.778522500565096,0.1,likely mature
+ceiling_p95,Osterley2,Western Regeneration Pty. Ltd.,1068.1421,13.4125,79.63780801491147,0.1,likely mature
+ceiling_p95,TheMeadows1,Western Regeneration Pty. Ltd.,483.7326,4.9337,98.0466181567586,0.1,likely mature
+ceiling_p95,Tindarey2,Western Regeneration Pty. Ltd.,372.5752,6.2737,59.38683711366498,0.1,likely mature
+ceiling_p95,Toolooly3,Western Regeneration Pty. Ltd.,1192.1796,8.9578,133.0884368929871,0.1,verified mature
+ceiling_p99,14816,UQ Joint Remote Sensing Research Program,1106.6548,9.9847,110.83505763818644,0.25,verified mature
+ceiling_p99,8312,UQ Joint Remote Sensing Research Program,456.7694,4.8008,95.14443426095652,0.25,likely mature
+ceiling_p99,CATER0016,DSITI Queensland Herbarium,1132.2937,9.5432,118.64926858915248,0.4,likely mature
+ceiling_p99,Cali1_91,DSITI Queensland Herbarium,567.7853,4.173,136.0616582794153,0.2,likely mature
+ceiling_p99,Cali2_1,DSITI Queensland Herbarium,568.4308,4.0542,140.20788318287208,0.32,likely mature
+ceiling_p99,Cali2_28,DSITI Queensland Herbarium,600.7568,5.9693,100.64108019365756,0.32,likely mature
+ceiling_p99,Cali2_66,DSITI Queensland Herbarium,602.6046,6.7506,89.26682072704648,0.24,likely mature
+ceiling_p99,DoubleGates2,Western Regeneration Pty. Ltd.,1140.558,12.351,92.3453971338353,0.1,likely mature
+ceiling_p99,Dwyer.brigalow_37,DSITI Queensland Herbarium,503.0432,5.5131,91.24507083129276,0.16,likely mature
+ceiling_p99,Kergunyah2,Western Regeneration Pty. Ltd.,1316.1535,9.9712,131.99549703145058,0.1,likely mature
+ceiling_p99,Lyndhurst2,Western Regeneration Pty. Ltd.,1186.2614,12.8579,92.2593425053858,0.1,verified mature
+ceiling_p99,Mulga.drought_169,DSITI Queensland Herbarium,1445.8878,12.7332,113.55258693808312,0.5,verified mature
+ceiling_p99,NQ.dieback_136,DSITI Queensland Herbarium,195.3653,1.4777,132.20904107734992,0.2,likely mature
+ceiling_p99,TheMeadows1,Western Regeneration Pty. Ltd.,483.7326,4.9337,98.0466181567586,0.1,likely mature
+ceiling_p99,Toolooly3,Western Regeneration Pty. Ltd.,1192.1796,8.9578,133.0884368929871,0.1,verified mature
+rebuilt_ceiling_p95,Butler.bunya_HE,DSITI Queensland Herbarium,1548.2810113051669,56.1483,27.57485108730214,1.0,verified mature
+rebuilt_ceiling_p95,Cali1_114,DSITI Queensland Herbarium,775.4106211949486,26.8008,28.932368481349386,0.2,verified mature
+rebuilt_ceiling_p95,Cali1_58,DSITI Queensland Herbarium,401.9029135652586,13.4848,29.80414344782708,0.16,verified mature
+rebuilt_ceiling_p95,Cali2_24,DSITI Queensland Herbarium,122.19591091057222,4.085,29.913319684350604,0.4,verified mature
+rebuilt_ceiling_p95,Dijoe5,Western Regeneration Pty. Ltd.,665.7892886764572,22.6338,29.415709632340004,0.1,verified mature
+rebuilt_ceiling_p95,LWA0204,DSITI Queensland Herbarium,41.28200103446756,1.4599,28.277279974291087,0.5,verified mature
+rebuilt_ceiling_p95,LWA0220,DSITI Queensland Herbarium,10.250090643993282,0.2983,34.36168502847228,0.5,verified mature
+rebuilt_ceiling_p95,LWA0229,DSITI Queensland Herbarium,26.931011426915376,0.8585,31.36984441108372,0.5,verified mature
+rebuilt_ceiling_p95,LWA0230,DSITI Queensland Herbarium,5.387270617427721,0.1711,31.48609361442269,0.5,likely mature
+rebuilt_ceiling_p95,LWA0254,DSITI Queensland Herbarium,34.809477017831355,1.1855,29.362696767466343,0.5,verified mature
+rebuilt_ceiling_p95,Lowan1,Western Regeneration Pty. Ltd.,735.3367359308143,24.0562,30.56745188063012,0.1,verified mature
+rebuilt_ceiling_p95,MER0159T,OEH NSW,167.481735063787,5.6745,29.51480043418574,0.1,verified mature
+rebuilt_ceiling_p95,MER1017C,OEH NSW,547.800298066593,17.6,31.12501693560187,0.1,verified mature
+rebuilt_ceiling_p95,MER1021C2,OEH NSW,444.6403419203039,14.2157,31.278117990693666,0.1,verified mature
+rebuilt_ceiling_p95,MER1091T2,OEH NSW,604.144739222506,15.8368,38.1481574069576,0.1,verified mature
+rebuilt_ceiling_p95,MER1096,OEH NSW,126.60595042896348,4.5365,27.908288422564414,0.1,verified mature
+rebuilt_ceiling_p95,MER3072T,OEH NSW,805.1576534873112,28.9584,27.80394129120777,0.1,verified mature
+rebuilt_ceiling_p95,MLA0094,DSITI Queensland Herbarium,10.80938276302257,0.3041,35.545487546933806,0.5,verified mature
+rebuilt_ceiling_p95,MLA0095,DSITI Queensland Herbarium,2.9039159699975503,0.1021,28.441880215451032,0.5,likely mature
