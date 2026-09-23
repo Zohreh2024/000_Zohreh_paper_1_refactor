@@ -104,7 +104,23 @@ import rasterio                                                 # noqa: E402
 from scipy.spatial import cKDTree                               # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-PARENT = HERE.parent                      # Space_time_validation/
+
+
+def _find_parent(start):
+    """Walk up until the folder holding Step_03 is found.
+
+    Located by content rather than by counting levels, so this keeps working
+    if the study is filed one directory deeper - which it was, when the runs
+    were split into Run_0/, Run_01/ and so on.
+    """
+    for d in [start] + list(start.parents):
+        if (d / "Step_03_match_and_validate.py").exists():
+            return d
+    raise SystemExit("could not find Step_03_match_and_validate.py above %s"
+                     % start)
+
+
+PARENT = _find_parent(HERE)               # Space_time_validation/
 SRC_OUT = PARENT / "outputs"
 OUT_DIR = HERE / "outputs"
 

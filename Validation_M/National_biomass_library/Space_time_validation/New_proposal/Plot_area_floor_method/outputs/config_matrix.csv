@@ -1,0 +1,10 @@
+config,what,min_area_ha,maturity
+mature_nofloor,"Run 0 reproduced - maturity filter, no area floor",0.0,verified mature+likely mature
+verified_nofloor,Run 1 reproduced - verified mature only,0.0,verified mature
+area_010,"plot area at least 0.10 ha, every maturity class",0.1,all
+area_020,"plot area at least 0.20 ha, every maturity class",0.2,all
+area_025,"plot area at least 0.25 ha, every maturity class",0.25,all
+area_030,"plot area at least 0.30 ha, every maturity class",0.3,all
+area_040,"plot area at least 0.40 ha, every maturity class",0.4,all
+area_050,"plot area at least 0.50 ha, every maturity class",0.5,all
+area_025_mature,both filters together - 0.25 ha AND mature,0.25,verified mature+likely mature
