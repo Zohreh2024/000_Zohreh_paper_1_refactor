@@ -11,6 +11,7 @@ any of them is re-run.
     Run_02                   lowering the plot-area threshold to 0.04 ha
     Run_03                   rebuilding biomass from stem diameters
     Run_04                   a maturity rule on basal area
+    combined_Run             the five decisions those tests point to
 
 Every configuration is placed on one axis: the rank correlation of the eight
 future runs MINUS that of their own NVIS-constrained null. That is the only
@@ -60,6 +61,7 @@ RUN_COLOUR = {
     "Run_0": "#6b6a66", "Run_01": "#eb6834",
     "Plot_area_floor_method": "#1baf7a", "Run_02": "#eda100",
     "Run_03": "#2a78d6", "Run_04": "#e34948",
+    "combined_Run": "#7d3c98",
 }
 CONTROLS = ["same_cell_present_day", "historical_analogue",
             "random_cells_nvis", "random_cells_unconstrained", "random_cells"]
@@ -196,6 +198,19 @@ def collect():
                            float(r["null_nvis_rho"]), float(r["gate_rho"]),
                            float(r["no_analogue"])))
 
+    # ---- combined_Run: the five decisions together -------------------- #
+    f = HERE / "combined_Run" / "outputs" / "combined_headline.csv"
+    if f.exists():
+        s = pd.read_csv(f)
+        for _, r in s.iterrows():
+            if r["config"] in ("run0", "run3_rebuilt"):
+                continue           # already present from Run_0 and Run_03
+            out.append(row("combined_Run", r["config"],
+                           "combined configuration",
+                           int(r["sites"]), float(r["ratio"]), float(r["rho"]),
+                           float(r["null_nvis_rho"]), float(r["gate_rho"]),
+                           float(r["no_analogue"])))
+
     d = pd.DataFrame(out)
     d["is_baseline"] = d["config"] == "run00_baseline"
     return d
@@ -240,8 +255,9 @@ def fig_all(d):
 
 def fig_gate(d):
     """The present-day gate, where it was measured - the most direct test."""
-    keep = ["run00_baseline", "verified_only", "area_040", "reported_stem_only",
-            "rebuilt_b2p5", "ba_07_labelled", "ba_07"]
+    keep = ["run00_baseline", "verified_only", "area_040",
+            "reported_stem_only", "rebuilt_b2p5", "ba_07_labelled", "ba_07",
+            "combined"]
     s = d[d["config"].isin(keep)].dropna(subset=["gate_rho"])
     s = s.set_index("config").reindex([k for k in keep if k in
                                        set(d["config"])]).reset_index()
@@ -256,8 +272,8 @@ def fig_gate(d):
     if len(b):
         ax.axhline(float(b.iloc[0]), color="#333333", lw=1.2, ls="--", zorder=5)
     for xi, v, n in zip(x, s["gate_rho"], s["sites"]):
-        ax.annotate("%.3f\nn = %d" % (v, n), (xi, v),
-                    xytext=(0, 5 if v >= 0 else -24),
+        ax.annotate("%.3f\nn = %d" % (v, n), (xi, max(v, 0.0)),
+                    xytext=(0, 5),
                     textcoords="offset points", ha="center", fontsize=8.6,
                     color=INK2)
     ax.set_xticks(x)
@@ -329,9 +345,9 @@ def build_report(d):
     doc.add_heading("The space-for-time validation, re-run one change at a "
                     "time: what was learned", 0)
     p = doc.add_paragraph()
-    r = p.add_run("Space_time_validation/New_proposal · generated %s · six "
+    r = p.add_run("Space_time_validation/New_proposal · generated %s · %d "
                   "studies, %d configurations" % (date.today().isoformat(),
-                                                  len(d)))
+                                                  d["run"].nunique(), len(d)))
     r.font.size = Pt(9)
     r.font.color.rgb = INK_2
 
@@ -352,7 +368,7 @@ def build_report(d):
         "from the analogue-found stratum rather than from rows that force a "
         "match onto a site with no analogue.")
 
-    doc.add_heading("The six studies", level=1)
+    doc.add_heading("The studies", level=1)
     table(doc, [
         ["Run_0", "eleven parameters, one at a time",
          "only the sample matters; nothing methodological moves rho by 0.04"],
@@ -366,6 +382,8 @@ def build_report(d):
          "largest change of all: the present-day gate rises 0.42 to 0.73"],
         ["Run_04", "maturity from basal area",
          "the rule is sound, the sample it unlocks is not"],
+        ["combined_Run", "the five decisions those tests point to",
+         "the gate reaches 0.844 on 850 sites, 147 of them south of 37 S"],
     ], ["study", "what it changed", "outcome"], widths=[1.6, 2.0, 2.6])
 
     doc.add_heading("Every configuration on one axis", level=1)
@@ -403,7 +421,8 @@ def build_report(d):
                      ("reported_stem_only", "Run 0 on the stem-data sites"),
                      ("rebuilt_b2p5", "biomass rebuilt from diameters"),
                      ("ba_07_labelled", "basal-area rule, labelled sites"),
-                     ("ba_07", "basal-area rule, all sites")]:
+                     ("ba_07", "basal-area rule, all sites"),
+                     ("combined", "the combined configuration")]:
         if cfg in g.index:
             rows.append([lab, int(g.loc[cfg, "sites"]),
                          fmt(g.loc[cfg, "gate_rho"])])
@@ -423,7 +442,7 @@ def build_report(d):
             % (fmt(g.loc["reported_stem_only", "gate_rho"]),
                fmt(g.loc["rebuilt_b2p5", "gate_rho"])), style="Intense Quote")
 
-    doc.add_heading("What runs through all six", level=1)
+    doc.add_heading("What runs through all of them", level=1)
     for t in [
         "Every improvement came from the observation, never from the matching. "
         "Run_0 tested eleven parameters one at a time and nothing "
@@ -468,11 +487,15 @@ def build_report(d):
 
     doc.add_heading("What to do with this", level=1)
     for t in [
-        "Publish Run 0 as the configuration, and report Run_03 as the "
-        "correction that matters. The rebuild changes the headline conclusion "
-        "of the space-time validation: a substantial part of the present-day "
-        "gate's failure was a property of the library's biomass column rather "
-        "than of M'.",
+        "Report Run 0 as published and combined_Run as corrected. The "
+        "difference between them is the headline of the whole exercise - the "
+        "present-day gate goes from 0.418 to 0.844, on 850 sites rather than "
+        "600 and with 147 south of 37 S rather than 4 - and the correction "
+        "that carries most of it is Run_03's rebuild of the observation.",
+        "Do not present the combined configuration as a one-change result. It "
+        "changes five things at once, its ingredients are not additive on the "
+        "gap, and its ceiling has never been tested against Run 0 in "
+        "isolation. Point at the individual runs for the evidence.",
         "Quote rankings, not levels. Run_03's scale constant is calibrated to "
         "the library's own median, so its ratio is not independent of the "
         "library; the plot-area floor lifts every ratio including the null's. "
