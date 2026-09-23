@@ -1,0 +1,7 @@
+source,visits,agb_median,basal_area_median,agb_per_ba_median,area_min,area_max,lat_min,lat_max,south_of_37
+DELWP Victoria,201,224.6553,30.7509,8.452493539636075,0.04,0.04,-39.0106,-34.7886,132
+University of Queensland,28,619.7412,15.7041,42.38158669622666,0.04,0.04,-27.4214,-27.2738,0
+University of NSW,27,67.9831,0.6367,73.7609649122807,0.04,0.04,-30.8413,-30.771,0
+DSITI Queensland Herbarium,17,557.4797,8.3672,35.55323773847391,0.04,0.045,-28.0246,-22.7734,0
+Department of Parks and Wildlife (WA),7,428.847,50.9775,10.758871309047109,0.04,0.04,-34.6151,-33.7003,0
+DSITI Queensland RSC,3,756.8905,8.3781,61.30337149195321,0.0491,0.0491,-26.6187,-24.82,0
