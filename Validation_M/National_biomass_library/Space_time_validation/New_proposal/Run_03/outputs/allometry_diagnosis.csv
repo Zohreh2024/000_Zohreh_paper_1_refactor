@@ -1,0 +1,7 @@
+test,value,note
+Eucalyptus stems on the acacia model,12471.0,199 survey events
+"spearman(diameter, mass), those stems",-0.169,largest stem 479 cm assigned 0 kg
+"R2 of ln(mass) on ln(diameter), CORRECT eucalypt stems",0.013,"slope -0.195 on 166,565 stems"
+median spearman within subplot,0.0006,"2435 subplots, 0.0% above 0.9"
+median spearman within subplot+model+species,-0.0044,"2133 groups, 0.0% above 0.9"
+"spearman(sum of stems / area, reported plot AGB)",0.921,a permutation preserves a sum
